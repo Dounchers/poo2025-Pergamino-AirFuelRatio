@@ -1,4 +1,4 @@
-package ar.edu.unnoba.poo2025.torneos.models;
+package ar.edu.unnoba.poo2025.torneos.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -121,4 +121,5 @@ public class Competencia {
     public void setInscripciones(List<Inscripcion> inscripciones) {
         this.inscripciones = inscripciones;
     }
+
 }
