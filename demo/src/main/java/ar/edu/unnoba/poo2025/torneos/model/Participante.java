@@ -24,8 +24,8 @@ public class Participante extends Usuario {
     @Column(nullable = false)
     private String documentType;
 
-    //@OneToMany(mappedBy = "participante", fetch = FetchType.LAZY)
-    //private List<Inscripcion> inscripciones = new ArrayList<>();
+    @OneToMany(mappedBy = "participante", fetch = FetchType.LAZY)
+    private List<Inscripcion> inscripciones = new ArrayList<>();
 
     protected Participante() {}
 
