@@ -1,4 +1,4 @@
-package ar.edu.unnoba.poo2025.torneos.models;
+package ar.edu.unnoba.poo2025.torneos.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
@@ -123,4 +123,5 @@ public class Torneo {
     public void setCompetencias(List<Competencia> competencias) {
         this.competencias = competencias;
     }
+
 }
