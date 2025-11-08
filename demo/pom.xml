@@ -44,10 +44,36 @@
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		
+		<!-- ModelMapper: Conversión automática entre Entidades y DTOs
+		     Permite mapear objetos Java sin escribir código repetitivo.
+		     Usado para convertir entidades (con todos los datos) a DTOs (solo datos necesarios)
+		     evitando exponer información sensible como contraseñas. -->
+		<dependency>
+			<groupId>org.modelmapper</groupId>
+			<artifactId>modelmapper</artifactId>
+			<version>3.1.1</version>
+		</dependency>
+		
+		<!-- Password4j: Librería para hashing de contraseñas con Bcrypt -->
+		<dependency>
+			<groupId>com.password4j</groupId>
+			<artifactId>password4j</artifactId>
+			<version>1.8.2</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		
+		<!-- Lombok: Elimina código repetitivo (getters, setters, constructores)
+     Genera automáticamente en tiempo de compilación usando anotaciones como @Data, @Getter, @Setter -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 
@@ -59,4 +85,4 @@
 			</plugin>
 		</plugins>
 	</build>
-</project> 
+</project>
