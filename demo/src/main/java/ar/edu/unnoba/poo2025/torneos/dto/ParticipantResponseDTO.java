@@ -1,11 +1,9 @@
 package ar.edu.unnoba.poo2025.torneos.dto;
 
-public class CreateParticipantRequestDTO {
-
+public class ParticipantResponseDTO {
     private String name;
     private String surname;
     private String email;
-    private String password;
     private String document;
     private String documentType;
 
@@ -28,13 +26,6 @@ public class CreateParticipantRequestDTO {
     }
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getDocument() {

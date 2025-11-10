@@ -7,6 +7,8 @@ import ar.edu.unnoba.poo2025.torneos.model.Participante;
 import ar.edu.unnoba.poo2025.torneos.repository.ParticipantRepository;
 import ar.edu.unnoba.poo2025.torneos.util.PasswordEncoder;
 
+import java.util.List;
+
 //La clase implementa la interfaz ParticipantService, proporcionando la lógica real del servicio.
 @Service
 public class ParticipantServiceImp implements ParticipantService {
@@ -19,7 +21,7 @@ public class ParticipantServiceImp implements ParticipantService {
 
   //Implementacion del método create desde la interfaz ParticipantService.
   @Override
-  public void create(Participante participante) throws Exception {
+  public Participante create(Participante participante) throws Exception {
 
     //Verifica si ya existe un participante con el mismo email en la base de datos.
     if (participantRepository.findByEmail(participante.getEmail()) != null) {
@@ -31,5 +33,16 @@ public class ParticipantServiceImp implements ParticipantService {
 
     //Guarda el nuevo participante en la base de datos.
     participantRepository.save(participante);
+      return participante;
+  }
+
+  @Override
+  public List<Participante> findAll() {
+      return participantRepository.findAll();
+  }
+
+  @Override
+  public Participante findByEmail(String email) {
+      return participantRepository.findByEmail(email);
   }
 }
