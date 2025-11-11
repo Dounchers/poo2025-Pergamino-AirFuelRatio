@@ -13,6 +13,7 @@ import java.util.ArrayList;
                 @Index(name = "idx_participante_surname", columnList = "surname")
         }
 )
+@PrimaryKeyJoinColumn(name = "id") // Indica que la PK de Participante se une con el ID de Usuario
 public class Participante extends Usuario {
 
     @Column(nullable = false)

@@ -34,7 +34,7 @@ public class Competencia {
     private Torneo torneo;
 
     // Relación con Inscripción: Competencia (1,1) asigna Inscripción (0,n)
-    // Se mapea con el atributo 'competencia' en la clase Inscripcion.
+    // Se mapea con el atributo 'competencia'    en la clase Inscripcion.
     @OneToMany(mappedBy = "competencia", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Inscripcion> inscripciones = new ArrayList<>(); // Inicializar para evitar NullPointerException
 

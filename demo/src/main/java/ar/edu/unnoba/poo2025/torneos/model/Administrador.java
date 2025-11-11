@@ -6,6 +6,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "Administrador")
+@PrimaryKeyJoinColumn(name = "id")
 public class Administrador extends Usuario{
     // No tiene atributos adicionales por ahora
     // Su distinción se da en lo funcional del modelo de negocio, que lo haríamos en capas superiores
@@ -20,6 +21,6 @@ public class Administrador extends Usuario{
     public Administrador(String email, String password) {
         super(email, password);
     }
-    //@OneToMany(mappedBy = "administrador", fetch = FetchType.LAZY)
-    //private List<Torneo> torneosCreados = new ArrayList<>();
+    @OneToMany(mappedBy = "administrador", fetch = FetchType.LAZY)
+    private List<Torneo> torneosCreados = new ArrayList<>();
 }
