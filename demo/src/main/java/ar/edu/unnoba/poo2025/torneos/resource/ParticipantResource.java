@@ -9,10 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ar.edu.unnoba.poo2025.torneos.dto.AuthenticationRequestDTO;
+import ar.edu.unnoba.poo2025.torneos.service.AuthenticationService;
+import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/participants")
@@ -23,6 +28,9 @@ public class ParticipantResource {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+ 	private AuthenticationService authenticationService;
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CreateParticipantRequestDTO requestDTO){
@@ -44,6 +52,27 @@ public class ParticipantResource {
                     .body("Error al crear el participante: "+ e.getMessage());
         }
     }
+    // NUEVO MÉTODO DE AUTENTICACIÓN
+ 	@PostMapping(path = "/auth", produces = MediaType.APPLICATION_JSON_VALUE)
+ 	public ResponseEntity<?> authentication(@RequestBody AuthenticationRequestDTO authRequest) {
+ 		try {
+ 			// 1. Mapear DTO a la entidad Participante
+ 			Participante participant = modelMapper.map(authRequest, Participante.class);
+
+ 			// 2. Delegar la autenticación al servicio
+ 			String jwtToken = authenticationService.authenticate(participant);
+
+ 			// 3. Retornar 200 OK con el token en el body
+ 			// Usamos Map para crear el JSON: { "token": "Bearer ..." }
+ 			Map<String, String> tokenResponse = Collections.singletonMap("token", jwtToken);
+ 			return ResponseEntity.ok(tokenResponse);
+
+ 		} catch (Exception e) {
+ 			// 4. Si falla (email no existe, contraseña no coincide), retornar 401 Unauthorized
+ 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+ 					.body(Map.of("error", e.getMessage()));
+ 		}
+ 	}
 
     @GetMapping
     public ResponseEntity<List<ParticipantResponseDTO>> getAll(){
