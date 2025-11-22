@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import ar.edu.unnoba.poo2025.torneos.util.PasswordEncoder;
+import ar.edu.unnoba.poo2025.torneos.util.JwtTokenUtil;
 
 @SpringBootApplication
 public class TorneosApplication {
@@ -32,5 +33,9 @@ public class TorneosApplication {
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new PasswordEncoder();
+	}
+	@Bean
+	public JwtTokenUtil jwtTokenUtil() {
+		return new JwtTokenUtil();
 	}
 }
