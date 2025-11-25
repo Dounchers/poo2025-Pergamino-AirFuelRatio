@@ -18,4 +18,9 @@ public class TournamentServiceImp implements TournamentService {
     public List<Torneo> getPublishedTournaments() {
         return tournamentRepository.findPublishedTrue();
     }
+
+    @Override
+    public Torneo findById(Long id){
+        return tournamentRepository.findById(id).orElse(null);
+    }
 }
