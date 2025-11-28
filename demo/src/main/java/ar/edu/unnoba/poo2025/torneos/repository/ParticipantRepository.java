@@ -12,4 +12,6 @@ public interface ParticipantRepository extends JpaRepository<Participante, Long>
   //Consulta personalizada para encontrar un Participante por su email.
   @Query("SELECT p FROM Participante p WHERE p.email = :email")
   public Participante findByEmail(@Param("email") String email); //El email se para como parametro para la consulta.
+
+  public Boolean existsByDocumentTypeAndDocument(String documentType, String document);
 }
