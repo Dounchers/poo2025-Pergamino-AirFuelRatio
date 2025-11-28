@@ -62,8 +62,17 @@ public class TournamentResource {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTournamentById(@PathVariable Long id){
+    public ResponseEntity<?> getTournamentById(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authorization){
+        
+        if (authorization == null || authorization.isEmpty()) {
+            return ResponseEntity.status(401).build();
+        }
+
         try {
+            authorizationService.authorize(authorization);
+
             Torneo tournament = tournamentService.findById(id);
             if(tournament == null){
                 return ResponseEntity.notFound().build();
@@ -71,22 +80,31 @@ public class TournamentResource {
             TournamentResponseDTO responseDTO = modelMapper.map(tournament, TournamentResponseDTO.class);
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Token inválido o expirado"));
         }
     }
 
     @GetMapping("/{tournamentId}/competitions")
-    public ResponseEntity<?> getCompetitionsByTournament(@PathVariable Long tournamentId) {
+    public ResponseEntity<?> getCompetitionsByTournament(
+            @PathVariable Long tournamentId,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        
+        if (authorization == null || authorization.isEmpty()) {
+            return ResponseEntity.status(401).build();
+        }
+
         try{
+            authorizationService.authorize(authorization);
+
             List<CompetitionResponseDTO> competitions = competitionService.findByTournamentId(tournamentId);
             if(competitions.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }
             return ResponseEntity.ok(competitions);
         } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Token inválido o expirado"));
         }
     }
 }

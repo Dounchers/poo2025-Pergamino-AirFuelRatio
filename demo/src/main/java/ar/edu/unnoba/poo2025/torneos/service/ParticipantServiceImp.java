@@ -28,6 +28,10 @@ public class ParticipantServiceImp implements ParticipantService {
       throw new Exception("El email ya se encuentra registrado"); //Si ya existe, lanza una excepción.
     }
 
+    if (participantRepository.existsByDocumentTypeAndDocument(participante.getDocumentType(), participante.getDocument())) {
+      throw new Exception("El tipo y número de documento ya están registrados");
+    }
+
     //Si no existe el participante, cifra su contraseña antes de guardarla en la base de datos.
     participante.setPassword(passwordEncoder.encode(participante.getPassword()));
 
