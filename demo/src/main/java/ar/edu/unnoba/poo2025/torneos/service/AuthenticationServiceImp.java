@@ -1,10 +1,13 @@
 package ar.edu.unnoba.poo2025.torneos.service;
 
+import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 import ar.edu.unnoba.poo2025.torneos.model.Participante;
 import ar.edu.unnoba.poo2025.torneos.util.JwtTokenUtil;
 import ar.edu.unnoba.poo2025.torneos.util.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ar.edu.unnoba.poo2025.torneos.exception.AuthenticationFailedException;
+import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 
 @Service
 public class AuthenticationServiceImp implements AuthenticationService {
@@ -29,7 +32,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         Participante foundParticipant = participantService.findByEmail(participant.getEmail());
         
         if (foundParticipant == null) {
-            throw new Exception("Credenciales inválidas: Email incorrecto.");
+            throw new UserNotFoundException("Email incorrecto.");
         }
 
         // 2. Utilizar PasswordEncoder para verificar el password
@@ -39,7 +42,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         );
         
         if (!passwordMatches) {
-            throw new Exception("Credenciales inválidas: Email o password incorrecto.");
+            throw new AuthenticationFailedException("Contraseña incorrecta.");
         }
 
         // 3. Generar un token JWT y retornarlo
