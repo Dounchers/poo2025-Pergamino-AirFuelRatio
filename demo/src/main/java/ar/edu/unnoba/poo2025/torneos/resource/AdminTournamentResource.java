@@ -1,32 +1,41 @@
 package ar.edu.unnoba.poo2025.torneos.resource;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import ar.edu.unnoba.poo2025.torneos.dto.CompetitionDetailDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.CreateCompetitionDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.CreateTournamentRequestDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.InscripcionDTO;
-import ar.edu.unnoba.poo2025.torneos.dto.TournamentInfoByIdResposeDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.TournamentListResponseDTO;
+import ar.edu.unnoba.poo2025.torneos.dto.TournamentResponseDTO;
 import ar.edu.unnoba.poo2025.torneos.exception.InvalidDateRangeException;
 import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
 import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 import ar.edu.unnoba.poo2025.torneos.model.Competencia;
 import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
-import ar.edu.unnoba.poo2025.torneos.service.InscriptionService;
+import ar.edu.unnoba.poo2025.torneos.repository.InscriptionRepository;
 import ar.edu.unnoba.poo2025.torneos.service.AuthorizationService;
 import ar.edu.unnoba.poo2025.torneos.service.CompetitionService;
 import ar.edu.unnoba.poo2025.torneos.service.TournamentService;
 import jakarta.validation.Valid;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin/tournaments")
@@ -39,7 +48,7 @@ public class AdminTournamentResource {
     @Autowired
     private CompetitionService competitionService;
     @Autowired
-    private InscriptionService inscriptionService;
+    private InscriptionRepository inscriptionRepository; // Inyeccion directa para reportes (podría ir en un Service)
     @Autowired
     private ModelMapper modelMapper;
 
@@ -71,7 +80,7 @@ public class AdminTournamentResource {
 
     //6.Get Tournaments (id)
     @GetMapping("/{id}")
-    public ResponseEntity<TournamentInfoByIdResposeDTO> getTournamentById(
+    public ResponseEntity<TournamentResponseDTO> getTournamentById(
         @PathVariable Long id, 
         @RequestHeader("Authorization") String authorization) {
 
@@ -91,7 +100,7 @@ public class AdminTournamentResource {
                 return ResponseEntity.status(404).build(); // Not Found
             }
 
-            TournamentInfoByIdResposeDTO response = new TournamentInfoByIdResposeDTO();
+            TournamentResponseDTO response = new TournamentResponseDTO();
             response.setId(tournament.getId());
             response.setName(tournament.getName());
             response.setDescription(tournament.getDescription());
@@ -101,7 +110,7 @@ public class AdminTournamentResource {
         
             // Calcular totales
             response.setTotalEnrollments(tournamentService.getTotalEnrollments(tournament.getId()));
-            response.setTotalRevenue(tournamentService.getTotalRevenue(tournament.getId()));
+            response.setTotalRevenue(tournamentService.getTotalRevenue(tournament.getId()).doubleValue());
         
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -221,8 +230,8 @@ public class AdminTournamentResource {
             CompetitionDetailDTO dto = modelMapper.map(comp, CompetitionDetailDTO.class);
             
             // Calculos usando el repositorio de inscripciones
-            dto.setTotalInscripciones(inscriptionService.countByCompetenciaId(id));
-            dto.setMontoTotalRecaudado(inscriptionService.sumPriceByCompetenciaId(id));
+            dto.setTotalInscripciones(inscriptionRepository.countByCompetenciaId(id));
+            dto.setMontoTotalRecaudado(inscriptionRepository.sumPriceByCompetenciaId(id));
 
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
@@ -290,7 +299,7 @@ public class AdminTournamentResource {
                                              @PathVariable Long competitionId) {
         try {
             validateAdmin(token);
-            List<Inscripcion> list = inscriptionService.findByCompetenciaId(competitionId);
+            List<Inscripcion> list = inscriptionRepository.findByCompetenciaId(competitionId);
             
             List<InscripcionDTO> dtos = list.stream().map(i -> {
                 InscripcionDTO d = modelMapper.map(i, InscripcionDTO.class);

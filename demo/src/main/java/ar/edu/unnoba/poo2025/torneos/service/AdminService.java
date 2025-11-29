@@ -11,7 +11,7 @@ public interface AdminService {
      * @param email El email del administrador.
      * @return La instancia de Administrador o null si no existe.
      */
-    Administrador findByEmail(String email) throws Exception;
+    Administrador findByEmail(String email) ;
 
     /**
      * Crea un nuevo administrador.

@@ -1,14 +1,13 @@
 package ar.edu.unnoba.poo2025.torneos.service;
 
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
-import ar.edu.unnoba.poo2025.torneos.model.Administrador;
+import org.springframework.stereotype.Service;
+
 import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
 import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.model.Administrador;
 import ar.edu.unnoba.poo2025.torneos.model.Participante;
 import ar.edu.unnoba.poo2025.torneos.util.JwtTokenUtil;
-import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
-import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 
 @Service
 public class AuthorizationServiceImp implements AuthorizationService {
@@ -26,7 +25,6 @@ public class AuthorizationServiceImp implements AuthorizationService {
         
         // 1. Utilizar JwtTokenUtil verificar validez del token JWT
         if (!jwtTokenUtil.verify(token)) {
-            throw new InvalidTokenException("Token JWT inválido o expirado.");
             throw new InvalidTokenException("Token JWT inválido o expirado.");
         }
 
