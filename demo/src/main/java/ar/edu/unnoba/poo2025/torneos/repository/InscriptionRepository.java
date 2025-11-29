@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.util.List;
 
-public interface InscripcionRepository extends JpaRepository<Inscripcion, Long> {
+public interface InscriptionRepository extends JpaRepository<Inscripcion, Long> {
     
     // Listar inscripciones de una competencia
     List<Inscripcion> findByCompetenciaId(Long competenciaId);

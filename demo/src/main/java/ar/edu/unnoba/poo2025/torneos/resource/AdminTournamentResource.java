@@ -5,7 +5,7 @@ import ar.edu.unnoba.poo2025.torneos.dto.CreateCompetitionDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.InscripcionDTO;
 import ar.edu.unnoba.poo2025.torneos.model.Competencia;
 import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
-import ar.edu.unnoba.poo2025.torneos.repository.InscripcionRepository;
+import ar.edu.unnoba.poo2025.torneos.repository.InscriptionRepository;
 import ar.edu.unnoba.poo2025.torneos.service.AdminAuthorizationService;
 import ar.edu.unnoba.poo2025.torneos.service.CompetitionService;
 import ar.edu.unnoba.poo2025.torneos.service.TournamentService;
@@ -30,7 +30,7 @@ public class AdminTournamentResource {
     @Autowired
     private CompetitionService competitionService;
     @Autowired
-    private InscripcionRepository inscripcionRepository; // Inyeccion directa para reportes (podría ir en un Service)
+    private InscriptionRepository inscriptionRepository; // Inyeccion directa para reportes (podría ir en un Service)
     @Autowired
     private ModelMapper modelMapper;
 
@@ -92,8 +92,8 @@ public class AdminTournamentResource {
             CompetitionDetailDTO dto = modelMapper.map(comp, CompetitionDetailDTO.class);
             
             // Calculos usando el repositorio de inscripciones
-            dto.setTotalInscripciones(inscripcionRepository.countByCompetenciaId(id));
-            dto.setMontoTotalRecaudado(inscripcionRepository.sumPriceByCompetenciaId(id));
+            dto.setTotalInscripciones(inscriptionRepository.countByCompetenciaId(id));
+            dto.setMontoTotalRecaudado(inscriptionRepository.sumPriceByCompetenciaId(id));
 
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
@@ -160,7 +160,7 @@ public class AdminTournamentResource {
                                              @PathVariable Long competitionId) {
         try {
             validateAdmin(token);
-            List<Inscripcion> list = inscripcionRepository.findByCompetenciaId(competitionId);
+            List<Inscripcion> list = inscriptionRepository.findByCompetenciaId(competitionId);
             
             List<InscripcionDTO> dtos = list.stream().map(i -> {
                 InscripcionDTO d = modelMapper.map(i, InscripcionDTO.class);
