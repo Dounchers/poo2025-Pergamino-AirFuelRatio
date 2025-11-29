@@ -30,4 +30,19 @@ public class TournamentServiceImp implements TournamentService {
     public Torneo findById(Long id){
         return tournamentRepository.findById(id).orElse(null);
     }
+    @Override
+    public void delete(Long id) throws Exception {
+        Torneo torneo = findById(id);
+        if (torneo == null) throw new Exception("Torneo no encontrado");
+        if (torneo.getPublish()) throw new Exception("No se puede eliminar un torneo publicado");
+        tournamentRepository.delete(torneo);
+    }
+
+    @Override
+    public void publish(Long id) throws Exception {
+        Torneo torneo = findById(id);
+        if (torneo == null) throw new Exception("Torneo no encontrado");
+        torneo.setPublish(true);
+        tournamentRepository.save(torneo);
+    }
 }
