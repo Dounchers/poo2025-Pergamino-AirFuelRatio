@@ -1,0 +1,134 @@
+# --- IDs clave ---
+# Si tu BD es secuencial y no la has reiniciado:
+# PARTICIPANTE ID: 2
+# TORNEO_PUB_ID: 1
+# COMPETENCIA 10K (Precio $20000): 1
+# COMPETENCIA 5K (Precio $15000, ya tiene 1 inscripción): 2
+# TORNEO_BORRADOR_ID: 2
+
+@PART_EMAIL = test@unnoba.ar
+@PART_PASS = 123456
+@ID_TORNEO_VAL = 1
+@ID_COMP_10K = 1
+@ID_COMP_5K_PREVIO = 2
+@ID_TORNEO_INV = 2
+@ID_COMP_BORRADOR = 3
+@INSCRIPCION_PREVIA_ID = 1
+@host = http://localhost:8080/
+@AUTH_TOKEN = eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidzTeB7G5F0DHsw9OjZNKpTMW1A
+# ----------------------------------------------------
+# 1. AUTENTICACIÓN: OBTENER EL TOKEN JWT
+# ----------------------------------------------------
+### 1.1 LOGIN PARTICIPANTE
+POST {{host}}/participants/auth
+Content-Type: application/json
+
+{
+  "email": "{{PART_EMAIL}}",
+  "password": "{{PART_PASS}}"
+}
+
+# ----------------------------------------------------
+# 2. PRUEBAS DE INSCRIPCIÓN (POST)
+# ----------------------------------------------------
+
+
+
+
+### 2.1 POST - INSCRIPCIÓN CON DESCUENTO (EXITOSO)
+# El participante ya tiene una inscripción previa (Competencia 5K).
+# Esta es la segunda: Competencia 10K (Precio base $20000).
+# Resultado esperado: 201 Created. price: 10000.00 (50% de descuento)
+POST {{host}}/tournaments/{{ID_TORNEO_VAL}}/competition/{{ID_COMP_10K}}/inscriptions
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMjI1NCwiZXhwIjoxNzY1MjY2MjU0fQ.wWJRsH8ZgratERbPd0XhXj59SLKiyjXKJPbCSE9UDOHjkjRjYkvGes-3e7gnsjMFKmK6uAWeJ6TdEN-b8j6PjA
+Content-Type: application/json
+
+### 2.2 POST - FALLO: YA INSCRIPTO (409 Conflict)
+# Intenta inscribirse de nuevo en la misma competencia.
+POST {{host}}/tournaments/{{ID_TORNEO_VAL}}/competition/{{ID_COMP_10K}}/inscriptions
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMjI1NCwiZXhwIjoxNzY1MjY2MjU0fQ.wWJRsH8ZgratERbPd0XhXj59SLKiyjXKJPbCSE9UDOHjkjRjYkvGes-3e7gnsjMFKmK6uAWeJ6TdEN-b8j6PjA
+Content-Type: application/json
+
+# Resultado esperado: 409 Conflict (AlreadyInscribedException)
+
+### 2.3 POST - FALLO: TORNEO NO PUBLICADO (400 Bad Request)
+# Intenta inscribirse en el Torneo 2 (el Torneo en Borrador).
+POST {{host}}/tournaments/{{ID_TORNEO_INV}}/competition/{{ID_COMP_BORRADOR}}/inscriptions
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMjI1NCwiZXhwIjoxNzY1MjY2MjU0fQ.wWJRsH8ZgratERbPd0XhXj59SLKiyjXKJPbCSE9UDOHjkjRjYkvGes-3e7gnsjMFKmK6uAWeJ6TdEN-b8j6PjA
+
+Content-Type: application/json
+
+# Resultado esperado: 400 Bad Request (TournamentNotPublishedException)
+
+### 2.4 POST - FALLO: SIN AUTORIZACIÓN (401 Unauthorized)
+# No se envía el token.
+POST {{host}}/tournaments/{{ID_TORNEO_VAL}}/competition/{{ID_COMP_10K}}/inscriptions
+Content-Type: application/json
+
+# Resultado esperado: 401 Unauthorized (Token requerido)
+
+# ----------------------------------------------------
+# 3. PRUEBAS DE CONSULTA (GET)
+# ----------------------------------------------------
+
+### 3.1 GET - LISTADO DE INSCRIPCIONES
+# Debe mostrar las 2 inscripciones al Torneo 1 (la previa y la recién creada con descuento).
+GET {{host}}/inscriptions
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidnTeB7G5F0DHsw9OjZNKpTMW1A
+
+# Resultado esperado: 200 OK. Lista con 2 elementos.
+
+### 3.2 GET - DETALLE DE INSCRIPCIÓN (Verificación IDOR)
+# Verificación de que el usuario puede ver su inscripción previa.
+GET {{host}}/inscriptions/{{INSCRIPCION_PREVIA_ID}}
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidnTeB7G5F0DHsw9OjZNKpTMW1A
+
+# Resultado esperado: 200 OK. Muestra el DTO de detalle completo (Precio 15000.00).
+
+### 3.3 GET - FALLO: IDOR (Inscripción que no existe o no es del usuario)
+# Asume que el ID 999 no existe o pertenece a otro usuario.
+GET {{host}}/inscriptions/999
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidnTeB7G5F0DHsw9OjZNKpTMW1A
+
+# Resultado esperado: 404 Not Found (ResourceNotFoundException)
+
+
+# ----------------------------------------------------
+# GET - LISTADO DE TORNEOS VIGENTES (Joaquín)
+# ----------------------------------------------------
+
+GET http://localhost:8080/tournaments
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidnTeB7G5F0DHsw9OjZNKpTMW1A
+
+# Resultado esperado: 200 OK.
+# El array JSON DEBE contener solo 1 torneo (Torneo Anual de POO - ID 1).
+# NO debe contener el Torneo en Borrador (ID 2).
+
+
+# 3.1 GET - DETALLE DE TORNEO VÁLIDO
+
+GET http://localhost:8080/tournaments/{{ID_TORNEO_VAL}}
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidnTeB7G5F0DHsw9OjZNKpTMW1A
+
+# Resultado esperado: 200 OK. DTO del Torneo Anual de POO.
+
+### GET - FALLO: Acceso a Torneo No Publicado
+GET http://localhost:8080/tournaments/{{ID_TORNEO_INV}}
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidnTeB7G5F0DHsw9OjZNKpTMW1A
+
+# Resultado esperado: 404 Not Found (o 401/403 si tu servicio restringe la búsqueda de no publicados).
+# Si el service solo busca publicados (es lo más seguro), debería retornar 404.
+
+# ----------------------------------------------------
+# GET - COMPETENCIAS DE TORNEO PUBLICADO
+# ----------------------------------------------------
+GET http://localhost:8080/tournaments/{{ID_TORNEO_VAL}}/competitions
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidnTeB7G5F0DHsw9OjZNKpTMW1A
+
+# Resultado esperado: 200 OK. Lista con las Competencias 10K y 5K.
+
+### GET - FALLO: Competencias de Torneo No Publicado
+GET http://localhost:8080/tournaments/{{ID_TORNEO_INV}}/competitions
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidnTeB7G5F0DHsw9OjZNKpTMW1A
+
+# Resultado esperado: 404 Not Found (Si el servicio intenta buscar el torneo y no lo encuentra/no lo permite)

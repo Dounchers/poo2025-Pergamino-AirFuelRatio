@@ -29,7 +29,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         Participante foundParticipant = participantService.findByEmail(participant.getEmail());
         
         if (foundParticipant == null) {
-            throw new Exception("Credenciales inválidas: Email o password incorrecto.");
+            throw new Exception("Credenciales inválidas: Email incorrecto.");
         }
 
         // 2. Utilizar PasswordEncoder para verificar el password
