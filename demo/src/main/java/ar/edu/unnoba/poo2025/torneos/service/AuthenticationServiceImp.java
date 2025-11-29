@@ -1,29 +1,31 @@
 package ar.edu.unnoba.poo2025.torneos.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import ar.edu.unnoba.poo2025.torneos.exception.AuthenticationFailedException;
 import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.model.Administrador;
 import ar.edu.unnoba.poo2025.torneos.model.Participante;
 import ar.edu.unnoba.poo2025.torneos.util.JwtTokenUtil;
 import ar.edu.unnoba.poo2025.torneos.util.PasswordEncoder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import ar.edu.unnoba.poo2025.torneos.exception.AuthenticationFailedException;
-import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 
 @Service
 public class AuthenticationServiceImp implements AuthenticationService {
 
     // Usamos la interfaz del servicio, no la implementación
-    private final ParticipantService participantService;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private  ParticipantService participantService;
+    
+    @Autowired
+    private  AdminService adminService;
 
     @Autowired
-    public AuthenticationServiceImp(ParticipantService participantService, PasswordEncoder passwordEncoder, JwtTokenUtil jwtTokenUtil) {
-        this.participantService = participantService;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtTokenUtil = jwtTokenUtil;
-    }
+    private  PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private  JwtTokenUtil jwtTokenUtil;
+   
     @Override
     public String authenticate(Participante participant) throws Exception {
         
@@ -47,5 +49,25 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
         // 3. Generar un token JWT y retornarlo
         return jwtTokenUtil.generateToken(foundParticipant.getEmail());
+    }
+
+    @Override
+    public String authenticate(Administrador administrador) throws Exception {
+        Administrador foundAdmin = adminService.findByEmail(administrador.getEmail());
+        
+        if (foundAdmin == null) {
+            throw new Exception("Credenciales inválidas: Email o password incorrecto.");
+        }
+
+        boolean passwordMatches = passwordEncoder.verify(
+            administrador.getPassword(),
+            foundAdmin.getPassword()
+        );
+        
+        if (!passwordMatches) {
+            throw new Exception("Credenciales inválidas: Email o password incorrecto.");
+        }
+
+        return jwtTokenUtil.generateToken(foundAdmin.getEmail());
     }
 }

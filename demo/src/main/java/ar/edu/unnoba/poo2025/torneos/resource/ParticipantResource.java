@@ -1,25 +1,29 @@
 package ar.edu.unnoba.poo2025.torneos.resource;
 
-import ar.edu.unnoba.poo2025.torneos.dto.CreateParticipantRequestDTO;
-import ar.edu.unnoba.poo2025.torneos.dto.ParticipantResponseDTO;
+import java.util.Collections;
 import ar.edu.unnoba.poo2025.torneos.exception.AuthenticationFailedException;
 import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
-import ar.edu.unnoba.poo2025.torneos.model.Participante;
-import ar.edu.unnoba.poo2025.torneos.service.ParticipantService;
+import java.util.List;
+import java.util.Map;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import ar.edu.unnoba.poo2025.torneos.dto.AuthenticationRequestDTO;
-import ar.edu.unnoba.poo2025.torneos.service.AuthenticationService;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.Map;
-import java.util.Collections;
+import ar.edu.unnoba.poo2025.torneos.dto.AuthenticationRequestDTO;
+import ar.edu.unnoba.poo2025.torneos.dto.CreateParticipantRequestDTO;
+import ar.edu.unnoba.poo2025.torneos.dto.ParticipantResponseDTO;
+import ar.edu.unnoba.poo2025.torneos.model.Participante;
+import ar.edu.unnoba.poo2025.torneos.service.AuthenticationService;
+import ar.edu.unnoba.poo2025.torneos.service.ParticipantService;
 
 @RestController
 @RequestMapping("/participants")
