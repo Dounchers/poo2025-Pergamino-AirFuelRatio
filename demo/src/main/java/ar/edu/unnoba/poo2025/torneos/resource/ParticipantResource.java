@@ -2,6 +2,8 @@ package ar.edu.unnoba.poo2025.torneos.resource;
 
 import ar.edu.unnoba.poo2025.torneos.dto.CreateParticipantRequestDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.ParticipantResponseDTO;
+import ar.edu.unnoba.poo2025.torneos.exception.AuthenticationFailedException;
+import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 import ar.edu.unnoba.poo2025.torneos.model.Participante;
 import ar.edu.unnoba.poo2025.torneos.service.ParticipantService;
 import org.modelmapper.ModelMapper;
@@ -66,6 +68,11 @@ public class ParticipantResource {
  			// Usamos Map para crear el JSON: { "token": "Bearer ..." }
  			Map<String, String> tokenResponse = Collections.singletonMap("token", jwtToken);
  			return ResponseEntity.ok(tokenResponse);
+
+        } catch (UserNotFoundException | AuthenticationFailedException e) {
+            // Si el usuario no existe O la clave es incorrecta, devolvemos el mismo 401
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Credenciales inválidas: Email o password incorrecto."));
 
  		} catch (Exception e) {
  			// 4. Si falla (email no existe, contraseña no coincide), retornar 401 Unauthorized

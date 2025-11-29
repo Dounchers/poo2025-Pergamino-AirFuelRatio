@@ -1,5 +1,7 @@
 package ar.edu.unnoba.poo2025.torneos.service;
 
+import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
+import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 import ar.edu.unnoba.poo2025.torneos.model.Participante;
 import ar.edu.unnoba.poo2025.torneos.util.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,7 @@ public class AuthorizationServiceImp implements AuthorizationService {
         
         // 1. Utilizar JwtTokenUtil verificar validez del token JWT
         if (!jwtTokenUtil.verify(token)) {
-            throw new Exception("Token JWT inválido o expirado.");
+            throw new InvalidTokenException("Token JWT inválido o expirado.");
         }
 
         // 2. Recuperar el subject (email) del token.
@@ -32,7 +34,7 @@ public class AuthorizationServiceImp implements AuthorizationService {
         Participante participant = participantService.findByEmail(email);
 
         if (participant == null) {
-            throw new Exception("Usuario asociado al token no encontrado.");
+            throw new UserNotFoundException("Usuario asociado al token no encontrado.");
         }
         
         // 4. Retornar la instancia de Participant

@@ -3,10 +3,11 @@ package ar.edu.unnoba.poo2025.torneos.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
+import org.springframework.stereotype.Repository;
 import ar.edu.unnoba.poo2025.torneos.model.Participante;
 
 //Interface que extiende JpaRepository para mejorar las operaciones CRUD de la entidad Participante.
+@Repository
 public interface ParticipantRepository extends JpaRepository<Participante, Long> {
 
   //Consulta personalizada para encontrar un Participante por su email.

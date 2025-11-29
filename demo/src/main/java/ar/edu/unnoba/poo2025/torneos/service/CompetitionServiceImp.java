@@ -37,7 +37,7 @@ public class CompetitionServiceImp implements CompetitionService{
       throw new Exception("Torneo no publicado.");
     }
 
-    List<Competencia> competitions = competitionRepository.findByTournamentId(tournamentId);
+    List<Competencia> competitions = competitionRepository.findByTorneoId(tournamentId);
 
     return competitions.stream()
             .map(comp -> {
@@ -84,4 +84,27 @@ public class CompetitionServiceImp implements CompetitionService{
       competitionRepository.delete(competencia);
   }
 
+  @Override
+    public CompetitionResponseDTO findByIdAndTorneoId(Long competitionId, Long tournamentId) throws Exception{
+      Torneo tournament = tournamentService.findById(tournamentId);
+
+      if(tournament == null){
+        throw new Exception("Torneo no encontrado.");
+      }
+
+      if(!tournament.getPublish()){
+        throw new Exception("Torneo no publicado.");
+      }
+
+      Competencia competition = competitionRepository.findByIdAndTorneoId(competitionId, tournamentId);
+
+      if(competition == null){
+        throw new Exception("Competencia no encontrada en el torneo especificado.");
+      }
+
+      CompetitionResponseDTO responseDTO = modelMapper.map(competition, CompetitionResponseDTO.class);
+
+      responseDTO.setTournamentName(competition.getTorneo().getName());
+      return responseDTO;
+  }
 }
