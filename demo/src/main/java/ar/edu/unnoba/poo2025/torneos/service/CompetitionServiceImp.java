@@ -1,5 +1,6 @@
 package ar.edu.unnoba.poo2025.torneos.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,8 +10,10 @@ import org.springframework.stereotype.Service;
 
 import ar.edu.unnoba.poo2025.torneos.dto.CompetitionResponseDTO;
 import ar.edu.unnoba.poo2025.torneos.model.Competencia;
+import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
 import ar.edu.unnoba.poo2025.torneos.repository.CompetitionRepository;
+import ar.edu.unnoba.poo2025.torneos.repository.InscriptionRepository;
 
 @Service
 public class CompetitionServiceImp implements CompetitionService{
@@ -23,6 +26,9 @@ public class CompetitionServiceImp implements CompetitionService{
 
   @Autowired
   private ModelMapper modelMapper;
+
+  @Autowired
+    private InscriptionRepository inscriptionRepository;
 
   @Override
   public List<CompetitionResponseDTO> findByTournamentId(Long tournamentId) throws Exception{
@@ -107,4 +113,16 @@ public class CompetitionServiceImp implements CompetitionService{
       responseDTO.setTournamentName(competition.getTorneo().getName());
       return responseDTO;
   }
+  @Override
+  public long countInscripciones(Long competenciaId) {
+        return inscriptionRepository.countByCompetenciaId(competenciaId);
+    }
+  @Override
+  public BigDecimal sumRecaudacion(Long competenciaId) {
+        return inscriptionRepository.sumPriceByCompetenciaId(competenciaId);
+    }
+  @Override
+  public List<Inscripcion> getInscripciones(Long competenciaId) {
+        return inscriptionRepository.findByCompetenciaId(competenciaId);
+    }
 }
