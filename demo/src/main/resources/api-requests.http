@@ -28,6 +28,15 @@ Content-Type: application/json
   "password": "{{PART_PASS}}"
 }
 
+### 1.2 FALLO EMAIL O PASSWORD INCORRECTO
+POST {{host}}/participants/auth
+Content-Type: application/json
+
+{
+  "email": "{{FAIL_EMAIL}}",
+  "password": "{{FAIL_PASS}}"
+}
+
 # ----------------------------------------------------
 # 2. PRUEBAS DE INSCRIPCIÓN (POST)
 # ----------------------------------------------------
@@ -132,3 +141,71 @@ GET http://localhost:8080/tournaments/{{ID_TORNEO_INV}}/competitions
 Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidnTeB7G5F0DHsw9OjZNKpTMW1A
 
 # Resultado esperado: 404 Not Found (Si el servicio intenta buscar el torneo y no lo encuentra/no lo permite)
+
+# ----------------------------------------------------
+# GET - COMPETENCIA ESPECIFICA DE TORNEO PUBLICADO
+# ----------------------------------------------------
+GET {{host}}/{{ID_TORNEO_VAL}}/competitions/{{ID_COMP_VAL}}
+Authorization: {{AUTH_TOKEN}}
+
+# Resultado esperado: 200 OK. Lista con la Competencia deseada
+
+### GET - FALLO: Competencias de Torneo No Publicado
+GET {{host}}/tournaments/{{ID_TORNEO_VAL}}/competition/{{ID_COMP_INV}}
+Authorization: {{AUTH_TOKEN}}
+
+# Resultado esperado: 404 Not Found (Si el servicio intenta buscar la competencia y no la encuentra)
+
+
+# ----------------------------------------------------
+# POST - CREAR UN NUEVO PARTICIPANTE
+# ----------------------------------------------------
+
+# 1 POST - CREAR UN NUEVO PARTICIPANTE (EXITOSO)
+POST {{host}}/participants/account
+Authorization: {{AUTH_TOKEN}}
+Content-Type: application/json
+
+{
+  "name": "NEW_NAME",
+  "surname": "NEW_SURNAME",
+  "email": "NEW_EMAIL",
+  "password": "NEW_PASSWORD",
+  "document": "NEW_DOCUMENT",
+  "documentType": "NEW_DOCUMENT_TYPE"
+}
+
+#Resultado esperado: 201 Created (Se crea el participante)
+
+
+# 2 FALLO YA EXISTE OTRO PARTICIPANTE CON ESE EMAIL
+POST {{host}}/participants/account
+Authorization: {{AUTH_TOKEN}}
+Content-Type: application/json
+
+{
+  "name": "NEW_NAME",
+  "surname": "NEW_SURNAME",
+  "email": "NEW_EMAIL",
+  "password": "NEW_PASSWORD",
+  "document": "NEW_DOCUMENT",
+  "documentType": "NEW_DOCUMENT_TYPE"
+}
+
+#Resultado esperado: 409 Conflict (Ya existe un participante con ese email)
+
+# 3 FALLO YA EXISTE OTRO PARTICIPANTE CON ESE DNI
+POST {{host}}/participants/account
+Authorization: {{AUTH_TOKEN}}
+Content-Type: application/json
+
+{
+  "name": "NEW_NAME",
+  "surname": "NEW_SURNAME",
+  "email": "NEW_EMAIL",
+  "password": "NEW_PASSWORD",
+  "document": "NEW_DOCUMENT",
+  "documentType": "NEW_DOCUMENT_TYPE"
+}
+
+#Resultado esperado: 409 Conflict (Ya existe un participante con ese DNI)
