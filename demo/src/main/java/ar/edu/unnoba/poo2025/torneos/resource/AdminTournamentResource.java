@@ -30,8 +30,6 @@ public class AdminTournamentResource {
     @Autowired
     private CompetitionService competitionService;
     @Autowired
-    private InscriptionRepository inscriptionRepository; // Inyeccion directa para reportes (podría ir en un Service)
-    @Autowired
     private ModelMapper modelMapper;
 
     // Helper para validar admin
@@ -160,7 +158,7 @@ public class AdminTournamentResource {
                                              @PathVariable Long competitionId) {
         try {
             validateAdmin(token);
-            List<Inscripcion> list = inscriptionRepository.findByCompetenciaId(competitionId);
+            List<Inscripcion> list = competitionService.getInscripciones(competitionId);
             
             List<InscripcionDTO> dtos = list.stream().map(i -> {
                 InscripcionDTO d = modelMapper.map(i, InscripcionDTO.class);
