@@ -14,6 +14,9 @@ import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
 import ar.edu.unnoba.poo2025.torneos.repository.CompetitionRepository;
 import ar.edu.unnoba.poo2025.torneos.repository.InscriptionRepository;
+import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotPublishedException;
+import ar.edu.unnoba.poo2025.torneos.exception.BusinessRuleException;
 
 @Service
 public class CompetitionServiceImp implements CompetitionService{
@@ -31,16 +34,16 @@ public class CompetitionServiceImp implements CompetitionService{
     private InscriptionRepository inscriptionRepository;
 
   @Override
-  public List<CompetitionResponseDTO> findByTournamentId(Long tournamentId) throws Exception{
+  public List<CompetitionResponseDTO> findByTournamentId(Long tournamentId) {
 
     Torneo tournament = tournamentService.findById(tournamentId);
 
     if(tournament == null){
-      throw new Exception("Torneo no encontrado.");
+      throw new ResourceNotFoundException("Torneo no encontrado.");
     }
 
     if(!tournament.getPublish()){
-      throw new Exception("Torneo no publicado.");
+      throw new TournamentNotPublishedException("Torneo no publicado.");
     }
 
     List<Competencia> competitions = competitionRepository.findByTorneoId(tournamentId);
@@ -59,20 +62,20 @@ public class CompetitionServiceImp implements CompetitionService{
   }
 
   @Override
-  public Competencia create(Long tournamentId, Competencia competencia) throws Exception {
+  public Competencia create(Long tournamentId, Competencia competencia) {
       Torneo torneo = tournamentService.findById(tournamentId);
-      if (torneo == null) throw new Exception("Torneo no encontrado");
-      if (torneo.getPublish()) throw new Exception("No se pueden agregar competencias a un torneo publicado");
+      if (torneo == null) throw new ResourceNotFoundException("Torneo no encontrado");
+      if (torneo.getPublish()) throw new BusinessRuleException("No se pueden agregar competencias a un torneo publicado");
       
       competencia.setTorneo(torneo);
       return competitionRepository.save(competencia);
   }
 
   @Override
-  public Competencia update(Long id, Competencia datosNuevos) throws Exception {
+  public Competencia update(Long id, Competencia datosNuevos) {
       Competencia competencia = competitionRepository.findById(id).orElse(null);
-      if (competencia == null) throw new Exception("Competencia no encontrada");
-      if (competencia.getTorneo().getPublish()) throw new Exception("No se puede editar una competencia de un torneo publicado");
+      if (competencia == null) throw new ResourceNotFoundException("Competencia no encontrada");
+      if (competencia.getTorneo().getPublish()) throw new BusinessRuleException("No se puede editar una competencia de un torneo publicado");
 
       competencia.setName(datosNuevos.getName());
       competencia.setCapacity(datosNuevos.getCapacity());
@@ -82,30 +85,30 @@ public class CompetitionServiceImp implements CompetitionService{
   }
 
   @Override
-  public void delete(Long id) throws Exception {
+  public void delete(Long id) {
       Competencia competencia = competitionRepository.findById(id).orElse(null);
-      if (competencia == null) throw new Exception("Competencia no encontrada");
-      if (competencia.getTorneo().getPublish()) throw new Exception("No se puede eliminar una competencia de un torneo publicado");
+      if (competencia == null) throw new ResourceNotFoundException("Competencia no encontrada");
+      if (competencia.getTorneo().getPublish()) throw new BusinessRuleException("No se puede eliminar una competencia de un torneo publicado");
       
       competitionRepository.delete(competencia);
   }
 
   @Override
-    public CompetitionResponseDTO findByIdAndTorneoId(Long competitionId, Long tournamentId) throws Exception{
+    public CompetitionResponseDTO findByIdAndTorneoId(Long competitionId, Long tournamentId) {
       Torneo tournament = tournamentService.findById(tournamentId);
 
       if(tournament == null){
-        throw new Exception("Torneo no encontrado.");
+        throw new ResourceNotFoundException("Torneo no encontrado.");
       }
 
       if(!tournament.getPublish()){
-        throw new Exception("Torneo no publicado.");
+        throw new BusinessRuleException("Torneo no publicado.");
       }
 
       Competencia competition = competitionRepository.findByIdAndTorneoId(competitionId, tournamentId);
 
       if(competition == null){
-        throw new Exception("Competencia no encontrada en el torneo especificado.");
+        throw new ResourceNotFoundException("Competencia no encontrada en el torneo especificado.");
       }
 
       CompetitionResponseDTO responseDTO = modelMapper.map(competition, CompetitionResponseDTO.class);

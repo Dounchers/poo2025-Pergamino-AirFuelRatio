@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.BusinessRuleException;
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
 import ar.edu.unnoba.poo2025.torneos.repository.TournamentRepository;
 import ar.edu.unnoba.poo2025.torneos.exception.InvalidDateRangeException;
@@ -107,17 +108,17 @@ public class TournamentServiceImp implements TournamentService {
 
 
     @Override
-    public void delete(Long id) throws Exception {
+    public void delete(Long id) {
         Torneo torneo = findById(id);
-        if (torneo == null) throw new Exception("Torneo no encontrado");
-        if (torneo.getPublish()) throw new Exception("No se puede eliminar un torneo publicado");
+        if (torneo == null) throw new ResourceNotFoundException("Torneo no encontrado");
+        if (torneo.getPublish()) throw new BusinessRuleException("No se puede eliminar un torneo publicado");
         tournamentRepository.delete(torneo);
     }
 
     @Override
-    public void publish(Long id) throws Exception {
+    public void publish(Long id) {
         Torneo torneo = findById(id);
-        if (torneo == null) throw new Exception("Torneo no encontrado");
+        if (torneo == null) throw new ResourceNotFoundException("Torneo no encontrado");
         torneo.setPublish(true);
         tournamentRepository.save(torneo);
     }
