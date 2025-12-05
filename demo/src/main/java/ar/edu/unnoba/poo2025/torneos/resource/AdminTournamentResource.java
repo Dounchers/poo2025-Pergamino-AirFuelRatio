@@ -79,8 +79,8 @@ public class AdminTournamentResource {
 
     // 4. Get Tournament Competition Detail (With totals)
     @GetMapping("/{tournamentId}/competitions/{id}")
-    public ResponseEntity<?> getCompetitionDetail(@RequestHeader("Authorization") String token, 
-                                                  @PathVariable Long tournamentId, 
+    public ResponseEntity<?> getCompetitionDetail(@RequestHeader("Authorization") String token,
+                                                  @PathVariable Long tournamentId,
                                                   @PathVariable Long id) {
         try {
             validateAdmin(token);
@@ -90,8 +90,8 @@ public class AdminTournamentResource {
             CompetitionDetailDTO dto = modelMapper.map(comp, CompetitionDetailDTO.class);
             
             // Calculos usando el repositorio de inscripciones
-            dto.setTotalInscripciones(inscriptionRepository.countByCompetenciaId(id));
-            dto.setMontoTotalRecaudado(inscriptionRepository.sumPriceByCompetenciaId(id));
+            dto.setTotalInscripciones(competitionService.countInscripciones(id));
+            dto.setMontoTotalRecaudado(competitionService.sumRecaudacion(id));
 
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
