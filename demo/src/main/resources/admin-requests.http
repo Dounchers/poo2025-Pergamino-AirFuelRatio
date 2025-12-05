@@ -3,12 +3,12 @@
 # ----------------------------------------------------
 # VARIABLES DE ENTORNO (Reemplaza con valores reales de tu BD/JWT)
 # ----------------------------------------------------
-# @host = http://localhost:8080
-# @ID_TORNEO_EXISTENTE = 1
-# @ID_COMP_EXISTENTE = 10
-# @ID_COMP_BORRAR = 11 (Asegúrate que este ID exista y no esté publicado para DELETE)
-# @ID_TORNEO_NO_PUBLICADO = 2 
-# @AUTH_ADMIN_TOKEN = Bearer [TOKEN JWT DE ADMINISTRADOR VÁLIDO]
+ @host = http://localhost:8080
+ @ID_TORNEO_EXISTENTE = 5
+ @ID_COMP_EXISTENTE = 7
+ @ID_COMP_BORRAR = 11
+ @ID_TORNEO_NO_PUBLICADO = 5 
+ @AUTH_ADMIN_TOKEN = Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbmFsaWFAdG9ybmVvcy5jb20iLCJpYXQiOjE3NjQ5NjYwNDIsImV4cCI6MTc2NTgzMDA0Mn0.mv5V2GJ9pgp0WGucZb_cZWqUOjgtgvJjHelfUtCDtZqw8D-_Qa72YPn6LgL09VvqH-6mw39EQyDeilqye1Nevg
 # ----------------------------------------------------
 
 # --- DTOs de Competencia ---
@@ -47,12 +47,12 @@ Authorization: {{AUTH_ADMIN_TOKEN}}
 # Crea una competencia dentro de un torneo (debe ser un torneo NO publicado o usar uno temporal).
 # Resultado esperado: 201 Created.
 # @name POST_CREAR_COMPETENCIA
-POST {{host}}/admin/tournaments/{{ID_TORNEO_NO_PUBLICADO}}
+POST {{host}}/admin/tournaments/{{ID_TORNEO_NO_PUBLICADO}}/competitions
 Authorization: {{AUTH_ADMIN_TOKEN}}
 Content-Type: application/json
 
 {
-    "name": "{{COMP_NEW_NAME}}",
+    "name": {{COMP_NEW_NAME}},
     "cupo": {{COMP_NEW_CAPACITY}},
     "precio": {{COMP_NEW_PRICE}}
 }
@@ -60,15 +60,15 @@ Content-Type: application/json
 ###
 
 ## 2.2 PUT - Actualizar Competencia (Change Tournament competition details)
-# Nota: La ruta PUT /admin/tournaments/:id asume que :id es el ID de la Competencia.
+# Nota: La ruta PUT requiere tanto el ID del torneo como el ID de la competencia
 # Resultado esperado: 200 OK.
 # @name PUT_ACTUALIZAR_COMPETENCIA
-PUT {{host}}/admin/tournaments/{{ID_COMP_EXISTENTE}}
+PUT {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/{{ID_COMP_EXISTENTE}}
 Authorization: {{AUTH_ADMIN_TOKEN}}
 Content-Type: application/json
 
 {
-    "name": "{{COMP_UPD_NAME}}",
+    "name": {{COMP_UPD_NAME}},
     "cupo": {{COMP_UPD_CAPACITY}},
     "precio": {{COMP_UPD_PRICE}}
 }
@@ -111,5 +111,126 @@ Authorization: {{AUTH_ADMIN_TOKEN}}
 # @name GET_LISTAR_INSCRIPCIONES
 GET {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/{{ID_COMP_EXISTENTE}}/inscripciones
 Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+# ----------------------------------------------------
+# 4. GESTIÓN DE ADMINISTRADORES
+# ----------------------------------------------------
+
+## 4.1 POST - Autenticar Administrador (Admin Authentication)
+# Realiza login de un administrador con email y contraseña.
+# Resultado esperado: 200 OK. Retorna token JWT.
+# @name POST_AUTH_ADMIN
+POST {{host}}/admin/auth
+Content-Type: application/json
+
+{
+    "email": "analia@torneos.com",
+    "password": "analia"
+}
+
+###
+
+## 4.2 GET - Listar Cuentas de Administradores (Get admin accounts)
+# Lista todos los administradores registrados.
+# Resultado esperado: 200 OK. Lista de AdminResponseDTO.
+# @name GET_LISTAR_CUENTAS_ADMIN
+GET {{host}}/admin/accounts
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+## 4.3 POST - Crear Nueva Cuenta de Administrador (Create admin account)
+# Crea un nuevo administrador en el sistema.
+# Resultado esperado: 201 Created.
+# @name POST_CREAR_ADMIN
+POST {{host}}/admin/accounts
+Authorization: {{AUTH_ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+    "email": "nuevo_admin@torneos.com",
+    "password": "NuevoAdmin123"
+}
+
+###
+
+## 4.4 DELETE - Eliminar Cuenta de Administrador (Delete admin account)
+# Elimina una cuenta de administrador (no puede ser la del usuario actual).
+# Resultado esperado: 204 No Content.
+# @name DELETE_ADMIN_ACCOUNT
+DELETE {{host}}/admin/accounts/5
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+# ---
+
+# VARIABLES DE TORNEOS PARA PRUEBAS (Agregar si es necesario)
+@TORNEO_NEW_NAME = "Torneo de Prueba 2026"
+@TORNEO_NEW_DESCRIPTION = "Torneo para tests de endpoints"
+@TORNEO_NEW_DATE_START = "2026-03-01"
+@TORNEO_NEW_DATE_END = "2026-03-31"
+@TORNEO_UPD_NAME = "Torneo Editado"
+@TORNEO_UPD_DESCRIPTION = "Descripción actualizada"
+@TORNEO_UPD_DATE_START = "2026-04-01"
+@TORNEO_UPD_DATE_END = "2026-04-30"
+
+###
+
+# ----------------------------------------------------
+# 5. GESTIÓN COMPLETA DE TORNEOS
+# ----------------------------------------------------
+
+## 5.1 GET - Listar Todos los Torneos (Get Tournaments)
+# Retorna la lista de todos los torneos.
+# Resultado esperado: 200 OK. Lista de TournamentListResponseDTO.
+# @name GET_LISTAR_TORNEOS
+GET {{host}}/admin/tournaments
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+## 5.2 GET - Obtener Detalles de Torneo (Get Tournament by ID)
+# Retorna los detalles de un torneo específico con totales.
+# Resultado esperado: 200 OK. TournamentResponseDTO con totalEnrollments y totalRevenue.
+# @name GET_DETALLE_TORNEO
+GET {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+## 5.3 POST - Crear Nuevo Torneo (Create Tournament)
+# Crea un nuevo torneo en el sistema.
+# Resultado esperado: 201 Created.
+# @name POST_CREAR_TORNEO
+POST {{host}}/admin/tournaments
+Authorization: {{AUTH_ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+    "name": {{TORNEO_NEW_NAME}},
+    "description": {{TORNEO_NEW_DESCRIPTION}},
+    "dateStart": {{TORNEO_NEW_DATE_START}},
+    "dateEnd": {{TORNEO_NEW_DATE_END}}
+}
+
+###
+
+## 5.4 PUT - Actualizar Torneo (Update Tournament)
+# Actualiza los detalles de un torneo existente.
+# Resultado esperado: 200 OK. TournamentListResponseDTO actualizado.
+# @name PUT_ACTUALIZAR_TORNEO
+PUT {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}
+Authorization: {{AUTH_ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+    "name": {{TORNEO_UPD_NAME}},
+    "description": {{TORNEO_UPD_DESCRIPTION}},
+    "dateStart": {{TORNEO_UPD_DATE_START}},
+    "dateEnd": {{TORNEO_UPD_DATE_END}}
+}
 
 ###

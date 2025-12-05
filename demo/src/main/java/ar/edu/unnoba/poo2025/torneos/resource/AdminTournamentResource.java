@@ -26,49 +26,31 @@ import ar.edu.unnoba.poo2025.torneos.dto.InscripcionDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.TournamentListResponseDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.TournamentResponseDTO;
 import ar.edu.unnoba.poo2025.torneos.exception.InvalidDateRangeException;
-import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
-import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 import ar.edu.unnoba.poo2025.torneos.model.Competencia;
 import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
-import ar.edu.unnoba.poo2025.torneos.repository.InscriptionRepository;
-import ar.edu.unnoba.poo2025.torneos.service.AuthorizationService;
 import ar.edu.unnoba.poo2025.torneos.service.CompetitionService;
 import ar.edu.unnoba.poo2025.torneos.service.TournamentService;
+import ar.edu.unnoba.poo2025.torneos.util.AdminValidator;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/admin/tournaments")
 public class AdminTournamentResource {
-
-    @Autowired
-    private AuthorizationService authorizationService;
     @Autowired
     private TournamentService tournamentService;
     @Autowired
     private CompetitionService competitionService;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private AdminValidator adminValidator;
 
-    // Helper para validar admin
-    private void validateAdmin(String token) throws Exception {
-        if (token == null || token.isEmpty()) throw new Exception("Token requerido");
-        authorizationService.authorizeAdmin(token);
-    }
-
-//              Torneos
+//   Torneos
     //5.Get Tournaments
     @GetMapping
      public ResponseEntity<List<TournamentListResponseDTO>> getTournaments(@RequestHeader("Authorization") String authorization) {
-        try {
-              authorizationService.authorizeAdmin(authorization);
-        } catch (InvalidTokenException | UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401
-        }
-        // 401
-         catch (Exception e) { 
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
-        }
+        adminValidator.validate(authorization);
         List<Torneo> tournaments = tournamentService.findAll();
         List<TournamentListResponseDTO> responseDTO = tournaments.stream()
             .map(tournament -> modelMapper.map(tournament, TournamentListResponseDTO.class))
@@ -82,15 +64,7 @@ public class AdminTournamentResource {
         @PathVariable Long id, 
         @RequestHeader("Authorization") String authorization) {
 
-        try {
-              authorizationService.authorizeAdmin(authorization);
-         } catch (InvalidTokenException | UserNotFoundException e) { 
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401
-         }
-        // 401
-         catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
-        }
+        adminValidator.validate(authorization);
         Torneo tournament;
         try {
             tournament = tournamentService.findById(id);
@@ -119,16 +93,9 @@ public class AdminTournamentResource {
     //7.Create Tournament
     @PostMapping
     public ResponseEntity<?> createTournament(@Valid @RequestBody CreateTournamentRequestDTO dto, @RequestHeader("Authorization") String authorization) {
-        try {
-            authorizationService.authorizeAdmin(authorization);
-        } catch (InvalidTokenException | UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401
-        }
-        // 401
-         catch (Exception e) { 
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
-        }
+        var administrador = adminValidator.validate(authorization);
         Torneo torneo = modelMapper.map(dto, Torneo.class);
+        torneo.setAdministrador(administrador);
         try {
             tournamentService.create(torneo);
             return ResponseEntity.status(201).build(); // Created
@@ -143,17 +110,9 @@ public class AdminTournamentResource {
     }
     //8.Change Tournament details 
     @PutMapping("/{id}")    
-    public ResponseEntity<?> updateTournament(@PathVariable Long id, @RequestBody CreateTournamentRequestDTO dto, @RequestHeader("Authorization") String authorization) {
-        try {
-            authorizationService.authorizeAdmin(authorization);
-        // Capturar excepciones específicas
-        } catch (InvalidTokenException | UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401
-        }
-        // 401
-         catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
-        }
+    public ResponseEntity<?> updateTournament(@PathVariable Long id, @RequestBody CreateTournamentRequestDTO dto, @RequestHeader("Authorization") String token) {
+       
+        adminValidator.validate(token);
         Torneo torneoDetails = modelMapper.map(dto, Torneo.class);
         try {
             Torneo updatedTorneo = tournamentService.update(id, torneoDetails);
@@ -178,20 +137,20 @@ public class AdminTournamentResource {
     // 1. Remove Tournament
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTournament(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        adminValidator.validate(token);
         try {
-            validateAdmin(token);
             tournamentService.delete(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
     // 2. Publish Tournament
     @PatchMapping("/{id}/published")
     public ResponseEntity<?> publishTournament(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        adminValidator.validate(token);
         try {
-            validateAdmin(token);
             tournamentService.publish(id);
             return ResponseEntity.ok(Map.of("message", "Torneo publicado"));
         } catch (Exception e) {
@@ -203,15 +162,15 @@ public class AdminTournamentResource {
     // 3. Get Tournament Competitions (Admin view - raw list)
     @GetMapping("/{tournamentId}/competitions")
     public ResponseEntity<?> getCompetitions(@RequestHeader("Authorization") String token, @PathVariable Long tournamentId) {
+        adminValidator.validate(token);
         try {
-            validateAdmin(token);
             // Reutilizamos el service público o creamos uno que devuelva entidades.
             // Aquí usamos el repositorio directamente a traves del service si existiera, o el metodo público
             // Nota: El método público filtra si no está publicado. Para admin deberiamos poder ver todo.
             // Por simplicidad reutilizo el método existente sabiendo esa restricción o deberías crear 'findAllByTournamentId' en el service.
             return ResponseEntity.ok(competitionService.findByTournamentId(tournamentId)); 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -220,8 +179,8 @@ public class AdminTournamentResource {
     public ResponseEntity<?> getCompetitionDetail(@RequestHeader("Authorization") String token,
                                                   @PathVariable Long tournamentId,
                                                   @PathVariable Long id) {
+        adminValidator.validate(token);
         try {
-            validateAdmin(token);
             Competencia comp = competitionService.findById(id);
             if (comp == null) return ResponseEntity.notFound().build();
 
@@ -233,7 +192,7 @@ public class AdminTournamentResource {
 
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -242,8 +201,8 @@ public class AdminTournamentResource {
     public ResponseEntity<?> createCompetition(@RequestHeader("Authorization") String token, 
                                                @PathVariable Long tournamentId, 
                                                @RequestBody CreateCompetitionDTO dto) {
+        adminValidator.validate(token);
         try {
-            validateAdmin(token);
             Competencia competencia = modelMapper.map(dto, Competencia.class);
             // Asegurar mapeo manual de nombres diferentes
             competencia.setCapacity(dto.getCupo());
@@ -261,8 +220,8 @@ public class AdminTournamentResource {
     public ResponseEntity<?> updateCompetition(@RequestHeader("Authorization") String token, 
                                                @PathVariable Long id, 
                                                @RequestBody CreateCompetitionDTO dto) {
+        adminValidator.validate(token);
         try {
-            validateAdmin(token);
             Competencia compData = new Competencia();
             compData.setName(dto.getName());
             compData.setCapacity(dto.getCupo());
@@ -280,8 +239,8 @@ public class AdminTournamentResource {
     public ResponseEntity<?> deleteCompetition(@RequestHeader("Authorization") String token, 
                                                @PathVariable Long tournamentId,
                                                @PathVariable Long id) {
+        adminValidator.validate(token);
         try {
-            validateAdmin(token);
             competitionService.delete(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
@@ -295,8 +254,8 @@ public class AdminTournamentResource {
     public ResponseEntity<?> getInscriptions(@RequestHeader("Authorization") String token, 
                                              @PathVariable Long tournamentId, 
                                              @PathVariable Long competitionId) {
+        adminValidator.validate(token);
         try {
-            validateAdmin(token);
             List<Inscripcion> list = competitionService.getInscripciones(competitionId);
             
             List<InscripcionDTO> dtos = list.stream().map(i -> {

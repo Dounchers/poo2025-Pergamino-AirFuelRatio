@@ -23,12 +23,10 @@ import ar.edu.unnoba.poo2025.torneos.dto.AdminResponseDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.AuthenticationRequestDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.CreateAdminRequestDTO;
 import ar.edu.unnoba.poo2025.torneos.exception.DuplicateResourceException;
-import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
-import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 import ar.edu.unnoba.poo2025.torneos.model.Administrador;
 import ar.edu.unnoba.poo2025.torneos.service.AdminService;
 import ar.edu.unnoba.poo2025.torneos.service.AuthenticationService;
-import ar.edu.unnoba.poo2025.torneos.service.AuthorizationService;
+import ar.edu.unnoba.poo2025.torneos.util.AdminValidator;
 
 
 @RestController
@@ -42,10 +40,10 @@ public class AdminResource {
     private ModelMapper modelMapper;
 
     @Autowired
-    private AuthorizationService authorizationService;
+    private AdminService adminService;
 
     @Autowired
-    private AdminService adminService;
+    private AdminValidator adminValidator;
 
 
     //1.Authentication
@@ -68,22 +66,12 @@ public class AdminResource {
     //2.Get admin accounts - lista todos los administradores
     @GetMapping("/accounts")
     public ResponseEntity<List<AdminResponseDTO>> getAccounts(@RequestHeader("Authorization") String authorization) {
-        try {
-            authorizationService.authorizeAdmin(authorization);
-        } catch (InvalidTokenException | UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401
-        }
-        // El token es válido, pero el usuario no existe. Se interpreta como fallo de autenticación 401
-         catch (Exception e) {
-            // Se usa el 403 para cualquier otro problema de autorización/permiso no cubierto
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403
-        }
+        adminValidator.validate(authorization);
 
         List<Administrador> administradores = adminService.findAll();
-
-         List<AdminResponseDTO> responseDTO = administradores.stream()
-        .map(admin -> modelMapper.map(admin, AdminResponseDTO.class))
-        .collect(Collectors.toList());
+        List<AdminResponseDTO> responseDTO = administradores.stream()
+            .map(admin -> modelMapper.map(admin, AdminResponseDTO.class))
+            .collect(Collectors.toList());
 
         return ResponseEntity.ok(responseDTO);
     }
@@ -91,15 +79,7 @@ public class AdminResource {
     //3.Create admin account
     @PostMapping("/accounts")
     public ResponseEntity<?> createAccount(@RequestBody CreateAdminRequestDTO dto, @RequestHeader("Authorization") String authorization) {
-        try {
-            authorizationService.authorizeAdmin(authorization);
-        } catch (InvalidTokenException | UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401
-        }
-        // 401
-         catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
-        }
+        adminValidator.validate(authorization);
        
         Administrador administrador = modelMapper.map(dto, Administrador.class);
        
@@ -107,12 +87,10 @@ public class AdminResource {
             adminService.create(administrador);
             return ResponseEntity.status(201).build(); // Created
         } catch (DuplicateResourceException e) {
-            // Manejo de error específico para recurso duplicado
-            return ResponseEntity.status(HttpStatus.CONFLICT) // 409
+            return ResponseEntity.status(HttpStatus.CONFLICT)
                                .body(Map.of("error", e.getMessage())); 
         } catch (Exception e) {
-            // Manejo de errores genéricos 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR) // 500
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                .body(Map.of("error", "Error interno al crear administrador"));
         }
     }
@@ -120,31 +98,18 @@ public class AdminResource {
     //4.Delete admin account
     @DeleteMapping("/accounts/{id}")
     public ResponseEntity<?> deleteAccount(@PathVariable Long id, @RequestHeader("Authorization") String authorization) {
-       //Validad que quien hace la request sea admin
-    Administrador adminActual;
-       try{
-              adminActual = authorizationService.authorizeAdmin(authorization);
-         // Capturar excepciones específicas
-         } catch (InvalidTokenException | UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401
-         }
-        // 401
-         catch (Exception e) {
-              return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
-       }
-         //Buscar el admin que se quiere eliminar (id)
-        Administrador adminAEliminar;
-        try{
-            adminAEliminar = adminService.findById(id);
-        } catch (Exception e) {
-            return ResponseEntity.status(404).build();
-        }
-        //Validar que el admin a eliminar no sea él mismo
-        if(adminActual.getId().equals(adminAEliminar.getId())){
-            return ResponseEntity.status(403).body(Map.of("error", "No puedes eliminar tu propia cuenta de administrador."));
-        }
-        //Eliminar el admin
-         try {
+        Administrador adminActual = adminValidator.validate(authorization);
+        
+        try {
+            Administrador adminAEliminar = adminService.findById(id);
+            if (adminAEliminar == null) {
+                return ResponseEntity.status(404).build();
+            }
+
+            if(adminActual.getId().equals(adminAEliminar.getId())){
+                return ResponseEntity.status(403).body(Map.of("error", "No puedes eliminar tu propia cuenta de administrador."));
+            }
+
             adminService.delete(id);
             return ResponseEntity.status(204).build(); // No Content
         } catch (Exception e) {
