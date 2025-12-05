@@ -1,0 +1,115 @@
+# --- Archivo: admin-requests.http ---
+# PRUEBAS DE ENDPOINTS DE ADMINISTRACIÓN (CRUD, PUBLICACIÓN, REPORTES)
+# ----------------------------------------------------
+# VARIABLES DE ENTORNO (Reemplaza con valores reales de tu BD/JWT)
+# ----------------------------------------------------
+# @host = http://localhost:8080
+# @ID_TORNEO_EXISTENTE = 1
+# @ID_COMP_EXISTENTE = 10
+# @ID_COMP_BORRAR = 11 (Asegúrate que este ID exista y no esté publicado para DELETE)
+# @ID_TORNEO_NO_PUBLICADO = 2 
+# @AUTH_ADMIN_TOKEN = Bearer [TOKEN JWT DE ADMINISTRADOR VÁLIDO]
+# ----------------------------------------------------
+
+# --- DTOs de Competencia ---
+@COMP_NEW_NAME = "Carrera Nocturna 2026"
+@COMP_NEW_CAPACITY = 120
+@COMP_NEW_PRICE = 35000.00
+@COMP_UPD_NAME = "Carrera Anual Editada"
+@COMP_UPD_CAPACITY = 200
+@COMP_UPD_PRICE = 40000.00
+
+# ----------------------------------------------------
+# 1. GESTIÓN DE TORNEOS (DELETE / PATCH)
+# ----------------------------------------------------
+
+## 1.1 DELETE - Borrar Torneo (Remove Tournament)
+# Resultado esperado: 200 OK (Si no está publicado) o 400 Bad Request (Si está publicado).
+# @name DELETE_TORNEO
+DELETE {{host}}/admin/tournaments/{{ID_TORNEO_NO_PUBLICADO}}
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+## 1.2 PATCH - Publicar Torneo (Publish tournament)
+# Resultado esperado: 200 OK. El torneo pasa a estar disponible para participantes.
+# @name PATCH_PUBLICAR_TORNEO
+PATCH {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/published
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+# ----------------------------------------------------
+# 2. GESTIÓN DE COMPETENCIAS (CRUD)
+# ----------------------------------------------------
+
+## 2.1 POST - Crear Nueva Competencia (Create Tournament Competition)
+# Crea una competencia dentro de un torneo (debe ser un torneo NO publicado o usar uno temporal).
+# Resultado esperado: 201 Created.
+# @name POST_CREAR_COMPETENCIA
+POST {{host}}/admin/tournaments/{{ID_TORNEO_NO_PUBLICADO}}
+Authorization: {{AUTH_ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+    "name": "{{COMP_NEW_NAME}}",
+    "cupo": {{COMP_NEW_CAPACITY}},
+    "precio": {{COMP_NEW_PRICE}}
+}
+
+###
+
+## 2.2 PUT - Actualizar Competencia (Change Tournament competition details)
+# Nota: La ruta PUT /admin/tournaments/:id asume que :id es el ID de la Competencia.
+# Resultado esperado: 200 OK.
+# @name PUT_ACTUALIZAR_COMPETENCIA
+PUT {{host}}/admin/tournaments/{{ID_COMP_EXISTENTE}}
+Authorization: {{AUTH_ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+    "name": "{{COMP_UPD_NAME}}",
+    "cupo": {{COMP_UPD_CAPACITY}},
+    "precio": {{COMP_UPD_PRICE}}
+}
+
+###
+
+## 2.3 DELETE - Borrar Competencia (Remove Tournament competition)
+# Resultado esperado: 200 OK.
+# @name DELETE_COMPETENCIA
+DELETE {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/{{ID_COMP_BORRAR}}
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+# ----------------------------------------------------
+# 3. CONSULTA Y REPORTES DE ADMINISTRACIÓN
+# ----------------------------------------------------
+
+## 3.1 GET - Listar Competencias (Get Tournament Competitions)
+# Retorna la lista de competencias de un torneo.
+# Resultado esperado: 200 OK. Lista de objetos Competencia.
+# @name GET_LISTAR_COMPETENCIAS_ADMIN
+GET {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+## 3.2 GET - Detalle de Competencia con Totales (Get Tournament Competition)
+# Retorna los detalles, incluyendo las métricas de inscripción y recaudación.
+# Resultado esperado: 200 OK. JSON con totalInscripciones y montoTotalRecaudado.
+# @name GET_DETALLE_COMPETENCIA_CON_TOTALES
+GET {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/{{ID_COMP_EXISTENTE}}
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+## 3.3 GET - Listar Inscripciones por Competencia (Get Tournament competition inscriptions)
+# Retorna un listado de los participantes (emails) que se inscribieron en una competencia.
+# Resultado esperado: 200 OK. Lista de InscripcionDTO.
+# @name GET_LISTAR_INSCRIPCIONES
+GET {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/{{ID_COMP_EXISTENTE}}/inscripciones
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###

@@ -48,8 +48,6 @@ public class AdminTournamentResource {
     @Autowired
     private CompetitionService competitionService;
     @Autowired
-    private InscriptionRepository inscriptionRepository; // Inyeccion directa para reportes (podría ir en un Service)
-    @Autowired
     private ModelMapper modelMapper;
 
     // Helper para validar admin
@@ -219,8 +217,8 @@ public class AdminTournamentResource {
 
     // 4. Get Tournament Competition Detail (With totals)
     @GetMapping("/{tournamentId}/competitions/{id}")
-    public ResponseEntity<?> getCompetitionDetail(@RequestHeader("Authorization") String token, 
-                                                  @PathVariable Long tournamentId, 
+    public ResponseEntity<?> getCompetitionDetail(@RequestHeader("Authorization") String token,
+                                                  @PathVariable Long tournamentId,
                                                   @PathVariable Long id) {
         try {
             validateAdmin(token);
@@ -230,8 +228,8 @@ public class AdminTournamentResource {
             CompetitionDetailDTO dto = modelMapper.map(comp, CompetitionDetailDTO.class);
             
             // Calculos usando el repositorio de inscripciones
-            dto.setTotalInscripciones(inscriptionRepository.countByCompetenciaId(id));
-            dto.setMontoTotalRecaudado(inscriptionRepository.sumPriceByCompetenciaId(id));
+            dto.setTotalInscripciones(competitionService.countInscripciones(id));
+            dto.setMontoTotalRecaudado(competitionService.sumRecaudacion(id));
 
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
@@ -299,7 +297,7 @@ public class AdminTournamentResource {
                                              @PathVariable Long competitionId) {
         try {
             validateAdmin(token);
-            List<Inscripcion> list = inscriptionRepository.findByCompetenciaId(competitionId);
+            List<Inscripcion> list = competitionService.getInscripciones(competitionId);
             
             List<InscripcionDTO> dtos = list.stream().map(i -> {
                 InscripcionDTO d = modelMapper.map(i, InscripcionDTO.class);
