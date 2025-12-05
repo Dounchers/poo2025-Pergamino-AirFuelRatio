@@ -4,24 +4,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import ar.edu.unnoba.poo2025.torneos.model.Participante;
-import ar.edu.unnoba.poo2025.torneos.service.InscriptionServiceImp;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import ar.edu.unnoba.poo2025.torneos.dto.CompetitionResponseDTO;
+import ar.edu.unnoba.poo2025.torneos.dto.InscripcionResponseDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.TournamentResponseDTO;
+import ar.edu.unnoba.poo2025.torneos.exception.AlreadyInscribedException;
+import ar.edu.unnoba.poo2025.torneos.exception.EnrollmentDateExceededException;
+import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
+import ar.edu.unnoba.poo2025.torneos.exception.NoCapacityException;
+import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotPublishedException;
+import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
+import ar.edu.unnoba.poo2025.torneos.model.Participante;
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
 import ar.edu.unnoba.poo2025.torneos.service.AuthorizationService;
 import ar.edu.unnoba.poo2025.torneos.service.CompetitionService;
-import ar.edu.unnoba.poo2025.torneos.service.TournamentService;
 import ar.edu.unnoba.poo2025.torneos.service.InscriptionService;
-import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
-import ar.edu.unnoba.poo2025.torneos.dto.InscripcionResponseDTO;
-import ar.edu.unnoba.poo2025.torneos.exception.*;
+import ar.edu.unnoba.poo2025.torneos.service.TournamentService;
 
 @RestController
 @RequestMapping("/tournaments")
@@ -48,13 +58,13 @@ public class TournamentResource {
         
         // Validar que el header Authorization existe
         if (authorization == null || authorization.isEmpty()) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         
         try {
             authorizationService.authorize(authorization);
         } catch (Exception e) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         
         List<Torneo> tournaments = tournamentService.getPublishedTournaments();
@@ -66,12 +76,12 @@ public class TournamentResource {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTournamentById(
+    public ResponseEntity<?> findById(
             @PathVariable Long id,
             @RequestHeader(value = "Authorization", required = false) String authorization){
         
         if (authorization == null || authorization.isEmpty()) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         try {
@@ -98,7 +108,7 @@ public class TournamentResource {
             @RequestHeader(value = "Authorization", required = false) String authorization) {
         
         if (authorization == null || authorization.isEmpty()) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         try {
@@ -108,7 +118,12 @@ public class TournamentResource {
             if (competitions.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }
-            return ResponseEntity.ok(competitions);
+            
+            List<CompetitionResponseDTO> responseDTOs = competitions.stream()
+                .map(comp -> modelMapper.map(comp, CompetitionResponseDTO.class))
+                .collect(Collectors.toList());
+                
+            return ResponseEntity.ok(responseDTOs);
         } catch (TournamentNotPublishedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Torneo no publicado"));

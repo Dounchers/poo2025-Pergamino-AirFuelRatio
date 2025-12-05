@@ -1,25 +1,26 @@
 package ar.edu.unnoba.poo2025.torneos.resource;
 
-import ar.edu.unnoba.poo2025.torneos.dto.InscriptionDetailDTO;
-import ar.edu.unnoba.poo2025.torneos.service.InscriptionService;
-import org.modelmapper.ModelMapper;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import ar.edu.unnoba.poo2025.torneos.dto.ParticipantInscriptionResponseDTO;
-import ar.edu.unnoba.poo2025.torneos.model.Participante;
-import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
-import ar.edu.unnoba.poo2025.torneos.service.AuthorizationService;
-import ar.edu.unnoba.poo2025.torneos.exception.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import ar.edu.unnoba.poo2025.torneos.dto.InscriptionDetailDTO;
+import ar.edu.unnoba.poo2025.torneos.dto.ParticipantInscriptionResponseDTO;
+import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
+import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
+import ar.edu.unnoba.poo2025.torneos.model.Participante;
+import ar.edu.unnoba.poo2025.torneos.service.AuthorizationService;
+import ar.edu.unnoba.poo2025.torneos.service.InscriptionService;
 
 @RestController
 public class InscriptionsResource {

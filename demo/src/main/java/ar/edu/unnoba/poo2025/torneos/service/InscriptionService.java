@@ -1,9 +1,8 @@
 package ar.edu.unnoba.poo2025.torneos.service;
 
-import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
+
+import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 
 public interface InscriptionService {
     /**
