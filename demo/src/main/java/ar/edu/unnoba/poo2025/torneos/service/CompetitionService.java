@@ -8,12 +8,12 @@ import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 
 public interface CompetitionService {
     // Métodos de Consulta Pública
-    List<CompetitionResponseDTO> findByTournamentId(Long tournamentId) throws Exception;
-    CompetitionResponseDTO findByIdAndTorneoId(Long competitionId, Long TorneoId) throws Exception;
+    List<CompetitionResponseDTO> findByTournamentId(Long tournamentId);
+    CompetitionResponseDTO findByIdAndTorneoId(Long competitionId, Long TorneoId);
     // Métodos CRUD de Administración
-    Competencia create(Long tournamentId, Competencia competencia) throws Exception;
-    Competencia update(Long id, Competencia competencia) throws Exception;
-    void delete(Long id) throws Exception;
+    Competencia create(Long tournamentId, Competencia competencia) ;
+    Competencia update(Long id, Competencia competencia);
+    void delete(Long id);
     Competencia findById(Long id);
     /** Retorna la cantidad total de inscripciones para una competencia. */
     long countInscripciones(Long competenciaId);

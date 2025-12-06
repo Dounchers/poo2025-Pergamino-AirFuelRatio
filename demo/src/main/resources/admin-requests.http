@@ -4,11 +4,11 @@
 # VARIABLES DE ENTORNO (Reemplaza con valores reales de tu BD/JWT)
 # ----------------------------------------------------
 # @host = http://localhost:8080
-# @ID_TORNEO_EXISTENTE = 1
+@ID_TORNEO_EXISTENTE = 1
 # @ID_COMP_EXISTENTE = 10
 # @ID_COMP_BORRAR = 11 (Asegúrate que este ID exista y no esté publicado para DELETE)
-# @ID_TORNEO_NO_PUBLICADO = 2 
-# @AUTH_ADMIN_TOKEN = Bearer [TOKEN JWT DE ADMINISTRADOR VÁLIDO]
+@ID_TORNEO_NO_PUBLICADO = 2
+@AUTH_ADMIN_TOKEN = Bearer [TOKEN JWT DE ADMINISTRADOR VÁLIDO]
 # ----------------------------------------------------
 
 # --- DTOs de Competencia ---
@@ -99,6 +99,9 @@ Authorization: {{AUTH_ADMIN_TOKEN}}
 ## 3.2 GET - Detalle de Competencia con Totales (Get Tournament Competition)
 # Retorna los detalles, incluyendo las métricas de inscripción y recaudación.
 # Resultado esperado: 200 OK. JSON con totalInscripciones y montoTotalRecaudado.
+@host = http://localhost:8080
+@ID_TORNEO_EXISTENTE = 1
+@ID_COMP_EXISTENTE = 2
 # @name GET_DETALLE_COMPETENCIA_CON_TOTALES
 GET {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/{{ID_COMP_EXISTENTE}}
 Authorization: {{AUTH_ADMIN_TOKEN}}

@@ -1,5 +1,7 @@
 package ar.edu.unnoba.poo2025.torneos.service;
 
+import ar.edu.unnoba.poo2025.torneos.exception.DocumentAlreadyRegisteredException;
+import ar.edu.unnoba.poo2025.torneos.exception.EmailAlreadyRegisteredException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,11 +27,11 @@ public class ParticipantServiceImp implements ParticipantService {
 
     //Verifica si ya existe un participante con el mismo email en la base de datos.
     if (participantRepository.findByEmail(participante.getEmail()) != null) {
-      throw new Exception("El email ya se encuentra registrado"); //Si ya existe, lanza una excepción.
+      throw new EmailAlreadyRegisteredException("El email ya se encuentra registrado"); //Si ya existe, lanza una excepción.
     }
 
     if (participantRepository.existsByDocumentTypeAndDocument(participante.getDocumentType(), participante.getDocument())) {
-      throw new Exception("El tipo y número de documento ya están registrados");
+      throw new DocumentAlreadyRegisteredException("El tipo y número de documento ya están registrados");
     }
 
     //Si no existe el participante, cifra su contraseña antes de guardarla en la base de datos.
