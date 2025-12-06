@@ -3,7 +3,7 @@ package ar.edu.unnoba.poo2025.torneos.resource;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
+import java.util.Comparator; 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,10 +48,14 @@ public class AdminTournamentResource {
 
 //   Torneos
     //5.Get Tournaments
-    @GetMapping
+  @GetMapping
      public ResponseEntity<List<TournamentListResponseDTO>> getTournaments(@RequestHeader("Authorization") String authorization) {
         adminValidator.validate(authorization);
-        List<Torneo> tournaments = tournamentService.findAll();
+     List<Torneo> tournaments = tournamentService.findAll()
+    .stream()
+    .sorted(Comparator.comparing(Torneo::getDateStart, 
+        Comparator.nullsLast(Comparator.reverseOrder())))
+    .collect(Collectors.toList());
         List<TournamentListResponseDTO> responseDTO = tournaments.stream()
             .map(tournament -> modelMapper.map(tournament, TournamentListResponseDTO.class))
             .toList();
