@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
 import ar.edu.unnoba.poo2025.torneos.repository.TournamentRepository;
 import ar.edu.unnoba.poo2025.torneos.exception.InvalidDateRangeException;
+import java.math.BigDecimal;
 
 @Service
 public class TournamentServiceImp implements TournamentService {
@@ -39,8 +40,6 @@ public class TournamentServiceImp implements TournamentService {
         return tournamentRepository.findAll();
     }
 
-    @Override
-    public void delete(Long id){
     public Torneo create(Torneo torneo) throws Exception {
         //Valida que el intervalo de fechas sea lógico (inicio antes que fin)
         validateTournamentDates(torneo);
