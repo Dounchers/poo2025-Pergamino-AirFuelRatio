@@ -38,7 +38,7 @@ public class ParticipantResource {
     @Autowired
  	private AuthenticationService authenticationService;
 
-    @PostMapping
+    @PostMapping("/account")
     public ResponseEntity<?> create(@RequestBody CreateParticipantRequestDTO requestDTO){
         try {
             //Mapea el DTO al model de participante
