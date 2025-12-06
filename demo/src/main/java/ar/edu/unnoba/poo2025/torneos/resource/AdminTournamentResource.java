@@ -209,7 +209,8 @@ public class AdminTournamentResource {
             competencia.setBasePrice(dto.getPrecio());
             
             Competencia created = competitionService.create(tournamentId, competencia);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+            CreateCompetitionDTO response = modelMapper.map(created, CreateCompetitionDTO.class);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
