@@ -23,6 +23,7 @@ import ar.edu.unnoba.poo2025.torneos.dto.AdminResponseDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.AuthenticationRequestDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.CreateAdminRequestDTO;
 import ar.edu.unnoba.poo2025.torneos.exception.DuplicateResourceException;
+import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
 import ar.edu.unnoba.poo2025.torneos.model.Administrador;
 import ar.edu.unnoba.poo2025.torneos.service.AdminService;
 import ar.edu.unnoba.poo2025.torneos.service.AuthenticationService;
@@ -48,19 +49,11 @@ public class AdminResource {
 
     //1.Authentication
     @PostMapping(path = "/auth", produces = MediaType.APPLICATION_JSON_VALUE)
- 	public ResponseEntity<?> authentication(@RequestBody AuthenticationRequestDTO authRequest) {
- 		try {
- 			Administrador administrador = modelMapper.map(authRequest, Administrador.class);
-
- 			String jwtToken = authenticationService.authenticate(administrador);
-
- 			Map<String, String> tokenResponse = Collections.singletonMap("token", jwtToken);
- 			return ResponseEntity.ok(tokenResponse);
-
- 		} catch (Exception e) {
- 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
- 					.body(Map.of("error", e.getMessage()));
- 		}
+ 	public ResponseEntity<?> authentication(@RequestBody AuthenticationRequestDTO authRequest) throws Exception {
+ 		Administrador administrador = modelMapper.map(authRequest, Administrador.class);
+ 		String jwtToken = authenticationService.authenticate(administrador);
+ 		Map<String, String> tokenResponse = Collections.singletonMap("token", jwtToken);
+ 		return ResponseEntity.ok(tokenResponse);
  	}
 
     //2.Get admin accounts - lista todos los administradores
@@ -82,39 +75,25 @@ public class AdminResource {
         adminValidator.validate(authorization);
        
         Administrador administrador = modelMapper.map(dto, Administrador.class);
-       
-        try {
-            adminService.create(administrador);
-            return ResponseEntity.status(201).build(); // Created
-        } catch (DuplicateResourceException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                               .body(Map.of("error", e.getMessage())); 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                               .body(Map.of("error", "Error interno al crear administrador"));
-        }
+        adminService.create(administrador);
+        return ResponseEntity.status(201).build(); // Created
     }
     
     //4.Delete admin account
     @DeleteMapping("/accounts/{id}")
-    public ResponseEntity<?> deleteAccount(@PathVariable Long id, @RequestHeader("Authorization") String authorization) {
+    public ResponseEntity<?> deleteAccount(@PathVariable Long id, @RequestHeader("Authorization") String authorization) throws Exception {
         Administrador adminActual = adminValidator.validate(authorization);
         
-        try {
-            Administrador adminAEliminar = adminService.findById(id);
-            if (adminAEliminar == null) {
-                return ResponseEntity.status(404).build();
-            }
-
-            if(adminActual.getId().equals(adminAEliminar.getId())){
-                return ResponseEntity.status(403).body(Map.of("error", "No puedes eliminar tu propia cuenta de administrador."));
-            }
-
-            adminService.delete(id);
-            return ResponseEntity.status(204).build(); // No Content
-        } catch (Exception e) {
-            return ResponseEntity.status(500)
-                .body(Map.of("error", "Error al eliminar administrador"));
+        Administrador adminAEliminar = adminService.findById(id);
+        if (adminAEliminar == null) {
+            throw new ResourceNotFoundException("Administrador no encontrado");
         }
+
+        if(adminActual.getId().equals(adminAEliminar.getId())){
+            return ResponseEntity.status(403).body(Map.of("error", "No puedes eliminar tu propia cuenta de administrador."));
+        }
+
+        adminService.delete(id);
+        return ResponseEntity.status(204).build(); // No Content
     }
 }

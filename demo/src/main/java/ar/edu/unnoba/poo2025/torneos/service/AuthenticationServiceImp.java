@@ -56,7 +56,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         Administrador foundAdmin = adminService.findByEmail(administrador.getEmail());
         
         if (foundAdmin == null) {
-            throw new Exception("Credenciales inválidas: Email o password incorrecto.");
+            throw new UserNotFoundException("Email incorrecto.");
         }
 
         boolean passwordMatches = passwordEncoder.verify(
@@ -65,7 +65,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         );
         
         if (!passwordMatches) {
-            throw new Exception("Credenciales inválidas: Email o password incorrecto.");
+            throw new AuthenticationFailedException("Contraseña incorrecta.");
         }
 
         return jwtTokenUtil.generateToken(foundAdmin.getEmail());
