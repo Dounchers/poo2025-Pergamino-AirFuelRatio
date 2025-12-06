@@ -1,14 +1,15 @@
 package ar.edu.unnoba.poo2025.torneos.repository;
 
-import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
+import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 
 @Repository
 public interface InscriptionRepository extends JpaRepository<Inscripcion, Long> {

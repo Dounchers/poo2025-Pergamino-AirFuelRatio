@@ -2,16 +2,15 @@ package ar.edu.unnoba.poo2025.torneos.dto;
 
 import java.time.LocalDate;
 
-public class TournamentResponseDTO {
+public class TournamentListResponseDTO {
 
     private Long id;
     private String name;
-    private String description;
     private LocalDate dateStart;
     private LocalDate dateEnd;
-    private Boolean publish;
-    private Long totalEnrollments;
-    private Double totalRevenue;
+    private boolean publish;
+
+    public TournamentListResponseDTO(){}
 
     public Long getId() {
         return id;
@@ -27,14 +26,6 @@ public class TournamentResponseDTO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public LocalDate getDateStart() {
@@ -53,27 +44,11 @@ public class TournamentResponseDTO {
         this.dateEnd = dateEnd;
     }
 
-    public Boolean getPublish() {
+    public boolean getPublish() {
         return publish;
     }
 
-    public void setPublish(Boolean publish) {
+    public void setPublish(boolean publish) {
         this.publish = publish;
-    }
-
-    public Long getTotalEnrollments() {
-        return totalEnrollments;
-    }
-
-    public void setTotalEnrollments(Long totalEnrollments) {
-        this.totalEnrollments = totalEnrollments;
-    }
-
-    public Double getTotalRevenue() {
-        return totalRevenue;
-    }
-
-    public void setTotalRevenue(Double totalRevenue) {
-        this.totalRevenue = totalRevenue;
     }
 }

@@ -1,5 +1,14 @@
 package ar.edu.unnoba.poo2025.torneos.model;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 
 @Entity
@@ -14,7 +23,7 @@ import jakarta.persistence.*;
 public abstract class Usuario{ //abstracta porque un usuario tiene que ser o admin o participante
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Id autoincremental con estrategia IDENTITY que es usa incremento automático como en los DBGMS
-    private long id;
+    private Long id;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -29,7 +38,7 @@ public abstract class Usuario{ //abstracta porque un usuario tiene que ser o adm
         this.password = password;
     }
 
-    public long getId() { //sólo getId porque el id es autogenerado
+    public Long getId() { //sólo getId porque el id es autogenerado
         return id;
     }
 

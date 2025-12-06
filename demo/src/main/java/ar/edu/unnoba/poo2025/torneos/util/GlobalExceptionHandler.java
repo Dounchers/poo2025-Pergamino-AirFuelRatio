@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<?> handleInvalidToken(InvalidTokenException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", e.getMessage()));
+            .body(Map.of("error", e.getMessage()));
     }
 
     /**
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<?> handleUserNotFound(UserNotFoundException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", e.getMessage()));
+            .body(Map.of("error", e.getMessage()));
     }
 
     /**
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthorizationFailedException.class)
     public ResponseEntity<?> handleAuthorizationFailed(AuthorizationFailedException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", e.getMessage()));
+            .body(Map.of("error", e.getMessage()));
     }
 
     /**
@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGenericException(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Error interno del servidor"));
+            .body(Map.of("error", "Error interno del servidor"));
     }
 
     /**
