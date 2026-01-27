@@ -1,14 +1,11 @@
-# --- Archivo: admin-requests.http ---
-# PRUEBAS DE ENDPOINTS DE ADMINISTRACIÓN (CRUD, PUBLICACIÓN, REPORTES)
+# --- VARIABLES DE ENTORNO (Verificadas en BD)
 # ----------------------------------------------------
-# VARIABLES DE ENTORNO (Reemplaza con valores reales de tu BD/JWT)
-# ----------------------------------------------------
- @host = http://localhost:8080
- @ID_TORNEO_EXISTENTE = 5
- @ID_COMP_EXISTENTE = 7
- @ID_COMP_BORRAR = 11
- @ID_TORNEO_NO_PUBLICADO = 5
- @AUTH_ADMIN_TOKEN = Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbmFsaWFAdG9ybmVvcy5jb20iLCJpYXQiOjE3NjQ5NjYwNDIsImV4cCI6MTc2NTgzMDA0Mn0.mv5V2GJ9pgp0WGucZb_cZWqUOjgtgvJjHelfUtCDtZqw8D-_Qa72YPn6LgL09VvqH-6mw39EQyDeilqye1Nevg
+@host = http://localhost:8080
+@ID_TORNEO_EXISTENTE = 13
+@ID_COMP_EXISTENTE = 7
+@ID_COMP_BORRAR = 8
+@ID_TORNEO_NO_PUBLICADO = 14
+@AUTH_ADMIN_TOKEN = Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbmFsaWFAdG9ybmVvcy5jb20iLCJpYXQiOjE3NjQ5NjYwNDIsImV4cCI6MTc2NTgzMDA0Mn0.mv5V2GJ9pgp0WGucZb_cZWqUOjgtgvJjHelfUtCDtZqw8D-_Qa72YPn6LgL09VvqH-6mw39EQyDeilqye1Nevg
 # ----------------------------------------------------
 
 # --- DTOs de Competencia ---
@@ -173,13 +170,12 @@ Authorization: {{AUTH_ADMIN_TOKEN}}
 # VARIABLES DE TORNEOS PARA PRUEBAS (Agregar si es necesario)
 @TORNEO_NEW_NAME = "Torneo de Prueba 2026"
 @TORNEO_NEW_DESCRIPTION = "Torneo para tests de endpoints"
-@TORNEO_NEW_DATE_START = "2026-03-01"
-@TORNEO_NEW_DATE_END = "2026-03-31"
+@TORNEO_NEW_DATE_START = "2024-03-01"
+@TORNEO_NEW_DATE_END = "2024-03-31"
 @TORNEO_UPD_NAME = "Torneo Editado"
 @TORNEO_UPD_DESCRIPTION = "Descripción actualizada"
-@TORNEO_UPD_DATE_START = "2026-04-01"
-@TORNEO_UPD_DATE_END = "2026-04-30"
-
+@TORNEO_UPD_DATE_START = "2024-04-01"
+@TORNEO_UPD_DATE_END = "2024-04-30"
 ###
 
 # ----------------------------------------------------

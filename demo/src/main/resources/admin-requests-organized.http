@@ -1,0 +1,241 @@
+# ============================================================
+# ADMIN API - PRUEBAS ORGANIZADAS POR FASES
+# ============================================================
+# Archivo: admin-requests-organized.http
+# Organización:
+#   FASE 1: Autenticación (obtener token)
+#   FASE 2: Crear datos de prueba (torneos, competencias, admins)
+#   FASE 3: Lectura y consultas (GET)
+#   FASE 4: Actualización (PUT/PATCH)
+#   FASE 5: Errores y casos especiales
+#   FASE 6: Eliminación (DELETE) - AL FINAL
+# ============================================================
+
+# VARIABLES DE ENTORNO (Verificadas en BD)
+@host = http://localhost:8080
+@ID_TORNEO_EXISTENTE = 5
+@ID_COMP_EXISTENTE = 7
+@ID_TORNEO_NO_PUBLICADO = 10
+@AUTH_ADMIN_TOKEN = Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbmFsaWFAdG9ybmVvcy5jb20iLCJpYXQiOjE3NjQ5NjYwNDIsImV4cCI6MTc2NTgzMDA0Mn0.mv5V2GJ9pgp0WGucZb_cZWqUOjgtgvJjHelfUtCDtZqw8D-_Qa72YPn6LgL09VvqH-6mw39EQyDeilqye1Nevg
+
+# DTOs para CREAR
+@COMP_NEW_NAME = "Carrera Nocturna 2026"
+@COMP_NEW_CAPACITY = 120
+@COMP_NEW_PRICE = 35000.00
+
+# DTOs para ACTUALIZAR
+@COMP_UPD_NAME = "Carrera Anual Editada"
+@COMP_UPD_CAPACITY = 200
+@COMP_UPD_PRICE = 40000.00
+
+# DTOs para TORNEOS
+@TORNEO_NEW_NAME = "Torneo de Prueba 2026"
+@TORNEO_NEW_DESCRIPTION = "Torneo para tests de endpoints"
+@TORNEO_NEW_DATE_START = "2026-03-01"
+@TORNEO_NEW_DATE_END = "2026-03-31"
+
+# ============================================================
+# FASE 1: AUTENTICACIÓN
+# ============================================================
+
+### 1.1 POST - Autenticar Administrador (obtener token)
+# Resultado esperado: 200 OK. Retorna token JWT.
+POST {{host}}/admin/auth
+Content-Type: application/json
+
+{
+    "email": "analia@torneos.com",
+    "password": "analia"
+}
+
+###
+
+# ============================================================
+# FASE 2: CREAR DATOS DE PRUEBA
+# ============================================================
+
+### 2.1 POST - Crear Nueva Competencia en Torneo NO publicado
+# Crea una competencia en Torneo 10 (no publicado).
+# Resultado esperado: 201 Created.
+POST {{host}}/admin/tournaments/{{ID_TORNEO_NO_PUBLICADO}}/competitions
+Authorization: {{AUTH_ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+    "name": {{COMP_NEW_NAME}},
+    "cupo": {{COMP_NEW_CAPACITY}},
+    "precio": {{COMP_NEW_PRICE}}
+}
+
+###
+
+### 2.2 POST - Crear Nuevo Torneo
+# Crea un nuevo torneo en el sistema.
+# Resultado esperado: 201 Created.
+POST {{host}}/admin/tournaments
+Authorization: {{AUTH_ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+    "name": {{TORNEO_NEW_NAME}},
+    "description": {{TORNEO_NEW_DESCRIPTION}},
+    "dateStart": "{{TORNEO_NEW_DATE_START}}",
+    "dateEnd": "{{TORNEO_NEW_DATE_END}}"
+}
+
+###
+
+### 2.3 POST - Crear Nueva Cuenta de Administrador
+# Crea un nuevo administrador en el sistema.
+# Resultado esperado: 201 Created.
+POST {{host}}/admin/accounts
+Authorization: {{AUTH_ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+    "email": "test_admin_{{$timestamp}}@torneos.com",
+    "password": "TestAdmin123"
+}
+
+###
+
+# ============================================================
+# FASE 3: LECTURA Y CONSULTAS (GET)
+# ============================================================
+
+### 3.1 GET - Listar Todos los Torneos
+# Retorna la lista de todos los torneos.
+# Resultado esperado: 200 OK. Lista de TournamentListResponseDTO.
+GET {{host}}/admin/tournaments
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+### 3.2 GET - Obtener Detalles de Torneo Existente
+# Retorna los detalles de un torneo específico con totales.
+# Resultado esperado: 200 OK. TournamentResponseDTO con totalEnrollments y totalRevenue.
+GET {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+### 3.3 GET - Listar Competencias de Torneo
+# Retorna la lista de competencias de un torneo.
+# Resultado esperado: 200 OK. Lista de objetos Competencia.
+GET {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+### 3.4 GET - Obtener Detalles de Competencia con Totales
+# Retorna los detalles, incluyendo las métricas de inscripción y recaudación.
+# Resultado esperado: 200 OK. JSON con totalInscripciones y montoTotalRecaudado.
+GET {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/{{ID_COMP_EXISTENTE}}
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+### 3.5 GET - Listar Inscripciones por Competencia
+# Retorna un listado de los participantes que se inscribieron en una competencia.
+# Resultado esperado: 200 OK. Lista de InscripcionDTO.
+GET {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/{{ID_COMP_EXISTENTE}}/inscripciones
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+### 3.6 GET - Listar Cuentas de Administradores
+# Lista todos los administradores registrados.
+# Resultado esperado: 200 OK. Lista de AdminResponseDTO.
+GET {{host}}/admin/accounts
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+# ============================================================
+# FASE 4: ACTUALIZACIÓN (PUT/PATCH)
+# ============================================================
+
+### 4.1 PUT - Actualizar Competencia
+# Actualiza los detalles de una competencia existente.
+# Resultado esperado: 200 OK.
+PUT {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/{{ID_COMP_EXISTENTE}}
+Authorization: {{AUTH_ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+    "name": {{COMP_UPD_NAME}},
+    "cupo": {{COMP_UPD_CAPACITY}},
+    "precio": {{COMP_UPD_PRICE}}
+}
+
+###
+
+### 4.2 PATCH - Publicar Torneo
+# Publica un torneo no publicado para que esté disponible.
+# Resultado esperado: 200 OK.
+PATCH {{host}}/admin/tournaments/{{ID_TORNEO_NO_PUBLICADO}}/published
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+# ============================================================
+# FASE 5: ERRORES Y CASOS ESPECIALES
+# ============================================================
+
+### 5.1 GET - Sin Autorización (falla esperada)
+# Intenta acceder sin token JWT.
+# Resultado esperado: 401 Unauthorized.
+GET {{host}}/admin/tournaments
+
+###
+
+### 5.2 GET - Torneo Inexistente (falla esperada)
+# Intenta obtener un torneo que no existe.
+# Resultado esperado: 404 Not Found.
+GET {{host}}/admin/tournaments/9999
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+### 5.3 POST - Crear Competencia con Datos Inválidos (falla esperada)
+# Intenta crear competencia en torneo no existente.
+# Resultado esperado: 400 Bad Request o 404 Not Found.
+POST {{host}}/admin/tournaments/9999/competitions
+Authorization: {{AUTH_ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+    "name": "Test",
+    "cupo": 100,
+    "precio": 5000.00
+}
+
+###
+
+# ============================================================
+# FASE 6: ELIMINACIÓN (DELETE) - AL FINAL
+# ============================================================
+
+### 6.1 DELETE - Borrar Competencia
+# Elimina una competencia del sistema.
+# Resultado esperado: 200 OK.
+DELETE {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/8
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+### 6.2 DELETE - Borrar Torneo No Publicado
+# Elimina un torneo que no está publicado.
+# Resultado esperado: 200 OK.
+DELETE {{host}}/admin/tournaments/{{ID_TORNEO_NO_PUBLICADO}}
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###
+
+### 6.3 DELETE - Eliminar Cuenta de Administrador
+# Elimina una cuenta de administrador (no puede ser la del usuario actual).
+# Resultado esperado: 204 No Content.
+DELETE {{host}}/admin/accounts/6
+Authorization: {{AUTH_ADMIN_TOKEN}}
+
+###

@@ -1,0 +1,169 @@
+# ============================================================
+# PARTICIPANT API - PRUEBAS ORGANIZADAS POR FASES
+# ============================================================
+# Archivo: api-requests-organized.http
+# Organización:
+#   FASE 1: Autenticación de participante
+#   FASE 2: Crear inscripciones
+#   FASE 3: Consultas (GET)
+#   FASE 4: Errores y casos especiales
+#   FASE 5: Eliminación (DELETE) - AL FINAL
+# ============================================================
+
+# IDs clave (Verificados en BD)
+# PARTICIPANTE ID: 1 (juan.perez@example.com)
+# PARTICIPANTE ID: 2 (maria.lopez@example.com)
+# TORNEO PUBLICADO: 5 (Torneo Abierto de Tenis)
+# TORNEO NO PUBLICADO: 10 (Torneo de Prueba 2026)
+# COMPETENCIA 1: 7 (Carrera Anual Editada - en Torneo 5)
+# COMPETENCIA 2: 8 (Dobles Mixto - en Torneo 5)
+
+@host = http://localhost:8080
+@ID_TORNEO_VAL = 5
+@ID_COMP_10K = 7
+@ID_COMP_5K_PREVIO = 8
+@ID_TORNEO_INV = 10
+@PART_EMAIL = juan.perez@example.com
+@PART_PASS = 123456
+@INSCRIPCION_PREVIA_ID = 1
+
+# ============================================================
+# FASE 1: AUTENTICACIÓN
+# ============================================================
+
+### 1.1 POST - Login Participante
+# Realiza login de un participante con email y contraseña.
+# Resultado esperado: 200 OK. Retorna token JWT.
+POST {{host}}/participants/auth
+Content-Type: application/json
+
+{
+  "email": "{{PART_EMAIL}}",
+  "password": "{{PART_PASS}}"
+}
+
+###
+
+# ============================================================
+# FASE 2: CREAR DATOS DE PRUEBA (INSCRIPCIONES)
+# ============================================================
+
+### 2.1 POST - Inscribirse en Competencia 10K
+# Crea una inscripción del participante en la competencia 10K.
+# Resultado esperado: 201 Created. Precio: base (sin descuento).
+POST {{host}}/tournaments/{{ID_TORNEO_VAL}}/competition/{{ID_COMP_10K}}/inscriptions
+Authorization: Bearer {{TOKEN}}
+Content-Type: application/json
+
+###
+
+### 2.2 POST - Inscribirse en Competencia 5K (segunda inscripción)
+# Crea una segunda inscripción del participante en otra competencia.
+# Resultado esperado: 201 Created. Precio: 50% descuento (segunda inscripción).
+POST {{host}}/tournaments/{{ID_TORNEO_VAL}}/competition/{{ID_COMP_5K_PREVIO}}/inscriptions
+Authorization: Bearer {{TOKEN}}
+Content-Type: application/json
+
+###
+
+# ============================================================
+# FASE 3: LECTURA Y CONSULTAS (GET)
+# ============================================================
+
+### 3.1 GET - Listar Torneos Vigentes
+# Obtiene la lista de todos los torneos publicados disponibles.
+# Resultado esperado: 200 OK. Array de torneos publicados.
+GET {{host}}/tournaments
+Authorization: Bearer {{TOKEN}}
+
+###
+
+### 3.2 GET - Obtener Detalles de Torneo
+# Obtiene los detalles de un torneo específico.
+# Resultado esperado: 200 OK. DTO del torneo.
+GET {{host}}/tournaments/{{ID_TORNEO_VAL}}
+Authorization: Bearer {{TOKEN}}
+
+###
+
+### 3.3 GET - Listar Competencias de Torneo
+# Obtiene la lista de competencias de un torneo.
+# Resultado esperado: 200 OK. Array de competencias.
+GET {{host}}/tournaments/{{ID_TORNEO_VAL}}/competitions
+Authorization: Bearer {{TOKEN}}
+
+###
+
+### 3.4 GET - Listar Inscripciones del Participante
+# Obtiene todas las inscripciones del participante autenticado.
+# Resultado esperado: 200 OK. Array con 2 inscripciones.
+GET {{host}}/inscriptions
+Authorization: Bearer {{TOKEN}}
+
+###
+
+### 3.5 GET - Obtener Detalles de Inscripción
+# Obtiene el detalle completo de una inscripción específica.
+# Resultado esperado: 200 OK. DTO de inscripción con precio.
+GET {{host}}/inscriptions/{{INSCRIPCION_PREVIA_ID}}
+Authorization: Bearer {{TOKEN}}
+
+###
+
+# ============================================================
+# FASE 4: ERRORES Y CASOS ESPECIALES
+# ============================================================
+
+### 4.1 GET - Sin Autorización (falla esperada)
+# Intenta acceder sin token JWT.
+# Resultado esperado: 401 Unauthorized.
+GET {{host}}/tournaments
+
+###
+
+### 4.2 POST - Inscribirse Nuevamente en Misma Competencia (falla esperada)
+# Intenta inscribirse dos veces en la misma competencia.
+# Resultado esperado: 409 Conflict (AlreadyInscribedException).
+POST {{host}}/tournaments/{{ID_TORNEO_VAL}}/competition/{{ID_COMP_10K}}/inscriptions
+Authorization: Bearer {{TOKEN}}
+Content-Type: application/json
+
+###
+
+### 4.3 POST - Inscribirse en Torneo No Publicado (falla esperada)
+# Intenta inscribirse en un torneo que no está publicado.
+# Resultado esperado: 400 Bad Request (TournamentNotPublishedException).
+POST {{host}}/tournaments/{{ID_TORNEO_INV}}/competition/8/inscriptions
+Authorization: Bearer {{TOKEN}}
+Content-Type: application/json
+
+###
+
+### 4.4 GET - Inscripción Inexistente (falla esperada)
+# Intenta acceder a una inscripción que no existe.
+# Resultado esperado: 404 Not Found (ResourceNotFoundException).
+GET {{host}}/inscriptions/9999
+Authorization: Bearer {{TOKEN}}
+
+###
+
+### 4.5 GET - Torneo No Publicado (falla esperada)
+# Intenta acceder a un torneo no publicado.
+# Resultado esperado: 404 Not Found.
+GET {{host}}/tournaments/{{ID_TORNEO_INV}}
+Authorization: Bearer {{TOKEN}}
+
+###
+
+# ============================================================
+# FASE 5: ELIMINACIÓN (DELETE) - AL FINAL
+# ============================================================
+
+### 5.1 DELETE - Cancelar Inscripción
+# Cancela una inscripción del participante.
+# Nota: Verificar si hay endpoint de DELETE para inscripciones.
+# Si existe, resultado esperado: 204 No Content o 200 OK.
+DELETE {{host}}/inscriptions/{{INSCRIPCION_PREVIA_ID}}
+Authorization: Bearer {{TOKEN}}
+
+###

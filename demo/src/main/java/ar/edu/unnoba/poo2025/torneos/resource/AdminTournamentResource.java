@@ -3,10 +3,7 @@ package ar.edu.unnoba.poo2025.torneos.resource;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.Comparator;
 
-import ar.edu.unnoba.poo2025.torneos.exception.*;
-import ar.edu.unnoba.poo2025.torneos.util.AdminValidator;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,26 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ar.edu.unnoba.poo2025.torneos.dto.CompetitionDetailDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.CreateCompetitionDTO;
-import ar.edu.unnoba.poo2025.torneos.dto.CreateTournamentRequestDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.InscripcionDTO;
-import ar.edu.unnoba.poo2025.torneos.dto.TournamentListResponseDTO;
-import ar.edu.unnoba.poo2025.torneos.dto.TournamentResponseDTO;
-import ar.edu.unnoba.poo2025.torneos.exception.InvalidDateRangeException;
+import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
 import ar.edu.unnoba.poo2025.torneos.model.Competencia;
 import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
-import ar.edu.unnoba.poo2025.torneos.repository.InscriptionRepository;
 import ar.edu.unnoba.poo2025.torneos.service.AdminAuthorizationService;
 import ar.edu.unnoba.poo2025.torneos.service.CompetitionService;
 import ar.edu.unnoba.poo2025.torneos.service.TournamentService;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import ar.edu.unnoba.poo2025.torneos.util.AdminValidator;
 
 @RestController
 @RequestMapping("/admin/tournaments")
@@ -68,8 +53,8 @@ public class AdminTournamentResource {
 
     // 1. Remove Tournament
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTournament(@RequestHeader("Authorization") String token, @PathVariable Long id) {
-        validateAdmin(token);
+    public ResponseEntity<?> deleteTournament(@RequestHeader("Authorization") String token, @PathVariable Long id) throws Exception {
+        adminValidator.validate(token);
         tournamentService.delete(id);
         return ResponseEntity.ok().build();
     }
@@ -111,47 +96,44 @@ public class AdminTournamentResource {
     public ResponseEntity<?> createCompetition(@RequestHeader("Authorization") String token, 
                                                @PathVariable Long tournamentId, 
                                                @RequestBody CreateCompetitionDTO dto) {
-        validateAdmin(token);
-        Competencia competencia = modelMapper.map(dto, Competencia.class);
-        competencia.setCapacity(dto.getCupo());
-        competencia.setBasePrice(dto.getPrecio());
-        Competencia created = competitionService.create(tournamentId, competencia);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        adminValidator.validate(token);
+        try {
+            Competencia competencia = modelMapper.map(dto, Competencia.class);
+            // Asegurar mapeo manual
+            competencia.setCapacity(dto.getCupo());
+            competencia.setBasePrice(dto.getPrecio());
+            
+            Competencia created = competitionService.create(tournamentId, competencia);
+            CreateCompetitionDTO response = modelMapper.map(created, CreateCompetitionDTO.class);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
     }
 
     // 6. Change Tournament competition details
     @PutMapping("/{tournamentId}/competitions/{id}") // El enunciado dice PUT /admin/tournaments/:id pero se refiere a la competencia
     public ResponseEntity<?> updateCompetition(@RequestHeader("Authorization") String token, 
                                                @PathVariable Long id, 
-                                               @RequestBody CreateCompetitionDTO dto) {
-
-        validateAdmin(token);
+                                               @RequestBody CreateCompetitionDTO dto) throws Exception {
         adminValidator.validate(token);
-        try {
-            Competencia compData = new Competencia();
-            compData.setName(dto.getName());
-            compData.setCapacity(dto.getCupo());
-            compData.setBasePrice(dto.getPrecio());
+        Competencia compData = new Competencia();
+        compData.setName(dto.getName());
+        compData.setCapacity(dto.getCupo());
+        compData.setBasePrice(dto.getPrecio());
 
-            Competencia updated = competitionService.update(id, compData);
-            return ResponseEntity.ok(updated);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
-        }
+        Competencia updated = competitionService.update(id, compData);
+        return ResponseEntity.ok(updated);
     }
 
     // 7. Remove Tournament competition
     @DeleteMapping("/{tournamentId}/competitions/{id}")
     public ResponseEntity<?> deleteCompetition(@RequestHeader("Authorization") String token, 
                                                @PathVariable Long tournamentId,
-                                               @PathVariable Long id) {
+                                               @PathVariable Long id) throws Exception {
         adminValidator.validate(token);
-        try {
-            competitionService.delete(id);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
-        }
+        competitionService.delete(id);
+        return ResponseEntity.ok().build();
     }
 
     //          Inscripciones
