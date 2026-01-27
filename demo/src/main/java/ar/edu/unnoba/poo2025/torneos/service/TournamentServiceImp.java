@@ -3,15 +3,16 @@ package ar.edu.unnoba.poo2025.torneos.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.math.BigDecimal;
 
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentAlreadyPublishedException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
-import ar.edu.unnoba.poo2025.torneos.exception.BusinessRuleException;
+
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
 import ar.edu.unnoba.poo2025.torneos.repository.TournamentRepository;
 import ar.edu.unnoba.poo2025.torneos.exception.InvalidDateRangeException;
+import java.math.BigDecimal;
 
 @Service
 public class TournamentServiceImp implements TournamentService {
@@ -38,8 +39,7 @@ public class TournamentServiceImp implements TournamentService {
     public List<Torneo> findAll() {
         return tournamentRepository.findAll();
     }
-    
-    @Override
+
     public Torneo create(Torneo torneo) throws Exception {
         //Valida que el intervalo de fechas sea lógico (inicio antes que fin)
         validateTournamentDates(torneo);
@@ -52,28 +52,28 @@ public class TournamentServiceImp implements TournamentService {
         // Buscar torneo existente
         Torneo existingTorneo = tournamentRepository.findById(id)
             .orElseThrow(() -> new Exception("Torneo no encontrado"));
-        
+
         // Valida la regla de negocio, si se puede editar o no.(Depende si esta publicado o no)
         if (!existingTorneo.isEditable()) {
             throw new Exception("No se puede editar un torneo publicado");
         }
-        
+
         //Valida que el intervalo de fechas sea lógico (inicio antes que fin)
         validateTournamentDates(torneo);
-        
+
 
         // Actualiza solo los campos del DTO
         existingTorneo.setName(torneo.getName());
         existingTorneo.setDescription(torneo.getDescription());
         existingTorneo.setDateStart(torneo.getDateStart());
         existingTorneo.setDateEnd(torneo.getDateEnd());
-        
+
         // Guardar
         return tournamentRepository.save(existingTorneo);
     }
-    private void validateTournamentDates(Torneo torneo) { 
+    private void validateTournamentDates(Torneo torneo) {
         if (torneo.getDateStart().isAfter(torneo.getDateEnd())) {
-            throw new InvalidDateRangeException("La fecha de inicio no puede ser posterior a la fecha de fin"); 
+            throw new InvalidDateRangeException("La fecha de inicio no puede ser posterior a la fecha de fin");
         }
     }
 
@@ -89,7 +89,7 @@ public class TournamentServiceImp implements TournamentService {
         return torneo.getCompetencias().stream()
             .mapToLong(competencia -> competencia.getInscripciones().size())
             .sum();
-    }   
+    }
 
     @Override
     public BigDecimal getTotalRevenue(Long tournamentId) throws Exception{
@@ -110,15 +110,16 @@ public class TournamentServiceImp implements TournamentService {
     @Override
     public void delete(Long id) {
         Torneo torneo = findById(id);
-        if (torneo == null) throw new ResourceNotFoundException("Torneo no encontrado");
-        if (torneo.getPublish()) throw new BusinessRuleException("No se puede eliminar un torneo publicado");
+        if (torneo == null) throw new TournamentNotFoundException("Torneo no encontrado");
+        if (torneo.getPublish()) throw new TournamentAlreadyPublishedException("No se puede eliminar un torneo publicado");
         tournamentRepository.delete(torneo);
     }
 
     @Override
     public void publish(Long id) {
         Torneo torneo = findById(id);
-        if (torneo == null) throw new ResourceNotFoundException("Torneo no encontrado");
+        if (torneo == null) throw new TournamentNotFoundException("Torneo no encontrado");
+        if (torneo.getPublish()) throw new TournamentAlreadyPublishedException("Torneo ya está publicado");
         torneo.setPublish(true);
         tournamentRepository.save(torneo);
     }

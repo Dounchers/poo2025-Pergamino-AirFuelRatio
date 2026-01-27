@@ -44,12 +44,12 @@ Authorization: {{AUTH_ADMIN_TOKEN}}
 # Crea una competencia dentro de un torneo (debe ser un torneo NO publicado o usar uno temporal).
 # Resultado esperado: 201 Created.
 # @name POST_CREAR_COMPETENCIA
-POST {{host}}/admin/tournaments/{{ID_TORNEO_NO_PUBLICADO}}/competitions
+POST {{host}}/admin/tournaments/{{ID_TORNEO_NO_PUBLICADO}}
 Authorization: {{AUTH_ADMIN_TOKEN}}
 Content-Type: application/json
 
 {
-    "name": {{COMP_NEW_NAME}},
+    "name": "{{COMP_NEW_NAME}}",
     "cupo": {{COMP_NEW_CAPACITY}},
     "precio": {{COMP_NEW_PRICE}}
 }
@@ -57,15 +57,15 @@ Content-Type: application/json
 ###
 
 ## 2.2 PUT - Actualizar Competencia (Change Tournament competition details)
-# Nota: La ruta PUT requiere tanto el ID del torneo como el ID de la competencia
+# Nota: La ruta PUT /admin/tournaments/:id asume que :id es el ID de la Competencia.
 # Resultado esperado: 200 OK.
 # @name PUT_ACTUALIZAR_COMPETENCIA
-PUT {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/{{ID_COMP_EXISTENTE}}
+PUT {{host}}/admin/tournaments/{{ID_COMP_EXISTENTE}}
 Authorization: {{AUTH_ADMIN_TOKEN}}
 Content-Type: application/json
 
 {
-    "name": {{COMP_UPD_NAME}},
+    "name": "{{COMP_UPD_NAME}}",
     "cupo": {{COMP_UPD_CAPACITY}},
     "precio": {{COMP_UPD_PRICE}}
 }
@@ -96,6 +96,9 @@ Authorization: {{AUTH_ADMIN_TOKEN}}
 ## 3.2 GET - Detalle de Competencia con Totales (Get Tournament Competition)
 # Retorna los detalles, incluyendo las métricas de inscripción y recaudación.
 # Resultado esperado: 200 OK. JSON con totalInscripciones y montoTotalRecaudado.
+@host = http://localhost:8080
+@ID_TORNEO_EXISTENTE = 1
+@ID_COMP_EXISTENTE = 2
 # @name GET_DETALLE_COMPETENCIA_CON_TOTALES
 GET {{host}}/admin/tournaments/{{ID_TORNEO_EXISTENTE}}/competitions/{{ID_COMP_EXISTENTE}}
 Authorization: {{AUTH_ADMIN_TOKEN}}

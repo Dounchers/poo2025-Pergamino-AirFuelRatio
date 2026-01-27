@@ -21,7 +21,7 @@ public class Administrador extends Usuario{
     // La relación está en memoria, sirve para accesos rápidos y además con lazy evitamos cargas innecesarias, sólo cuando se lo llama
     // Sería el equivalente a relationship en SQLAlchemy
 
-    protected Administrador() {} //constructor vacío protegido para JPA, al ser Protected evita que otros paquetes creen instancias vacías
+    public Administrador() {} //constructor vacío protegido para JPA, al ser Protected evita que otros paquetes creen instancias vacías
 
     public Administrador(String email, String password) {
         super(email, password);

@@ -8,13 +8,24 @@ import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import ar.edu.unnoba.poo2025.torneos.exception.AlreadyInscribedException;
 import ar.edu.unnoba.poo2025.torneos.exception.AuthenticationFailedException;
 import ar.edu.unnoba.poo2025.torneos.exception.AuthorizationFailedException;
 import ar.edu.unnoba.poo2025.torneos.exception.BusinessRuleException;
+import ar.edu.unnoba.poo2025.torneos.exception.CompetitionNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.DocumentAlreadyRegisteredException;
 import ar.edu.unnoba.poo2025.torneos.exception.DuplicateResourceException;
+import ar.edu.unnoba.poo2025.torneos.exception.EmailAlreadyRegisteredException;
+import ar.edu.unnoba.poo2025.torneos.exception.EnrollmentDateExceededException;
 import ar.edu.unnoba.poo2025.torneos.exception.InvalidDateRangeException;
 import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
+import ar.edu.unnoba.poo2025.torneos.exception.NoCapacityException;
+import ar.edu.unnoba.poo2025.torneos.exception.ParticipantNotFoundException;
 import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentAlreadyPublishedException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotPublishedException;
+import ar.edu.unnoba.poo2025.torneos.exception.UnauthorizedException;
 import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 
 /**
@@ -76,16 +87,6 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Maneja ResourceNotFoundException: Recurso no encontrado
-     * Retorna: 404 NOT_FOUND
-     */
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<?> handleResourceNotFound(ResourceNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(Map.of("error", e.getMessage()));
-    }
-
-    /**
      * Maneja BusinessRuleException: Violación de reglas de negocio
      * Retorna: 400 BAD_REQUEST
      */
@@ -124,4 +125,56 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(Map.of("error", "Error interno del servidor"));
     }
+
+    /**
+     * Excepciones para recursos no encontrados
+     * Retorna: 404 NOT_FOUND
+     */
+
+    @ExceptionHandler({
+            ResourceNotFoundException.class,
+            TournamentNotFoundException.class,
+            CompetitionNotFoundException.class,
+            ParticipantNotFoundException.class
+    })
+    public ResponseEntity<Map<String, String>> handleNotFound(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND) // 404
+                .body(Map.of("error", ex.getMessage()));
+    }
+
+    //** Excepciones para recursos conflictivos
+    // * Retorna: 401 CONFLICT
+    //
+
+    @ExceptionHandler({
+            AlreadyInscribedException.class,
+            EmailAlreadyRegisteredException.class,
+            DocumentAlreadyRegisteredException.class
+    })
+    public ResponseEntity<Map<String, String>> handleConflict(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT) // 409
+                .body(Map.of("error", ex.getMessage()));
+    }
+    //** Excepciones para solicitudes incorrectas
+    // * Retorna: 400 BAD_REQUEST
+    //
+    @ExceptionHandler({
+            NoCapacityException.class,
+            TournamentNotPublishedException.class,
+            EnrollmentDateExceededException.class,
+            TournamentAlreadyPublishedException.class
+    })
+    public ResponseEntity<Map<String, String>> handleBadRequest(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST) // 400
+                .body(Map.of("error", ex.getMessage()));
+    }
+
+    //* Excepcion para no autorizado
+    //* Retorna: 403 FORBIDDEN
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Map<String, String>> handleUnauthorized(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN) // 403
+                .body(Map.of("error", ex.getMessage()));
+    }
+
 }

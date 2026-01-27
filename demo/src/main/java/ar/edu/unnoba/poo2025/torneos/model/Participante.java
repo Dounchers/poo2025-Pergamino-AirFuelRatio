@@ -28,7 +28,7 @@ public class Participante extends Usuario {
     @OneToMany(mappedBy = "participante", fetch = FetchType.LAZY)
     private List<Inscripcion> inscripciones = new ArrayList<>();
 
-    protected Participante() {}
+    public Participante() {}
 
     public Participante(String email, String password, String name, String surname, String document, String documentType) {
         super(email, password);

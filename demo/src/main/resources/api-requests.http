@@ -15,8 +15,7 @@
 @ID_COMP_BORRADOR = 8
 @INSCRIPCION_PREVIA_ID = 1
 @host = http://localhost:8080/
-@AUTH_TOKEN = eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidzTeB7G5F0DHsw9OjZNKpTMW1A
-# ----------------------------------------------------
+@AUTH_TOKEN = eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MkB1bm5vYmEuYXIiLCJpYXQiOjE3NjQ5MTEwMzcsImV4cCI6MTc2NTc3NTAzN30.lBbKSoBHbyCr44EFosfi3NDLL3kXs70Nj6l2XMyvKzekT_ZEG-g1oxVO7ZqS0qGx9Rfuy7J6X34u5sxvXv3qTg
 # 1. AUTENTICACIÓN: OBTENER EL TOKEN JWT
 # ----------------------------------------------------
 ### 1.1 LOGIN PARTICIPANTE
@@ -48,10 +47,9 @@ Content-Type: application/json
 # El participante ya tiene una inscripción previa (Competencia 5K).
 # Esta es la segunda: Competencia 10K (Precio base $20000).
 # Resultado esperado: 201 Created. price: 10000.00 (50% de descuento)
-POST {{host}}/tournaments/{{ID_TORNEO_VAL}}/competition/{{ID_COMP_10K}}/inscriptions
-Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMjI1NCwiZXhwIjoxNzY1MjY2MjU0fQ.wWJRsH8ZgratERbPd0XhXj59SLKiyjXKJPbCSE9UDOHjkjRjYkvGes-3e7gnsjMFKmK6uAWeJ6TdEN-b8j6PjA
+POST {{host}}/tournaments/{{ID_TORNEO_VAL}}/competition/{{ID_COMP_5K_PREVIO}}/inscriptions
+Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MkB1bm5vYmEuYXIiLCJpYXQiOjE3NjQ5MTEwMzcsImV4cCI6MTc2NTc3NTAzN30.lBbKSoBHbyCr44EFosfi3NDLL3kXs70Nj6l2XMyvKzekT_ZEG-g1oxVO7ZqS0qGx9Rfuy7J6X34u5sxvXv3qTg
 Content-Type: application/json
-
 ### 2.2 POST - FALLO: YA INSCRIPTO (409 Conflict)
 # Intenta inscribirse de nuevo en la misma competencia.
 POST {{host}}/tournaments/{{ID_TORNEO_VAL}}/competition/{{ID_COMP_10K}}/inscriptions
@@ -63,7 +61,7 @@ Content-Type: application/json
 ### 2.3 POST - FALLO: TORNEO NO PUBLICADO (400 Bad Request)
 # Intenta inscribirse en el Torneo 2 (el Torneo en Borrador).
 POST {{host}}/tournaments/{{ID_TORNEO_INV}}/competition/{{ID_COMP_BORRADOR}}/inscriptions
-Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMjI1NCwiZXhwIjoxNzY1MjY2MjU0fQ.wWJRsH8ZgratERbPd0XhXj59SLKiyjXKJPbCSE9UDOHjkjRjYkvGes-3e7gnsjMFKmK6uAWeJ6TdEN-b8j6PjA
+Authorization: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMjI1NCwiZXhwIjoxNzY1MjY2MjU0fQ.wWJRsH8ZgratERbPd0XhXj59SLKiyjXKJPbCSE9UDOHjkjRjYkvGes-3e7gnsjMFKmK6uAWeJ6TdEN-b8j6PjA
 
 Content-Type: application/json
 
@@ -83,7 +81,7 @@ Content-Type: application/json
 ### 3.1 GET - LISTADO DE INSCRIPCIONES
 # Debe mostrar las 2 inscripciones al Torneo 1 (la previa y la recién creada con descuento).
 GET {{host}}/inscriptions
-Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidnTeB7G5F0DHsw9OjZNKpTMW1A
+Authorization: Bearer {{AUTH_TOKEN}}
 
 # Resultado esperado: 200 OK. Lista con 2 elementos.
 

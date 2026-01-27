@@ -4,6 +4,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import ar.edu.unnoba.poo2025.torneos.exception.CompetitionNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentAlreadyPublishedException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotPublishedException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,9 +18,6 @@ import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
 import ar.edu.unnoba.poo2025.torneos.repository.CompetitionRepository;
 import ar.edu.unnoba.poo2025.torneos.repository.InscriptionRepository;
-import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
-import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotPublishedException;
-import ar.edu.unnoba.poo2025.torneos.exception.BusinessRuleException;
 
 @Service
 public class CompetitionServiceImp implements CompetitionService{
@@ -39,7 +40,7 @@ public class CompetitionServiceImp implements CompetitionService{
     Torneo tournament = tournamentService.findById(tournamentId);
 
     if(tournament == null){
-      throw new ResourceNotFoundException("Torneo no encontrado.");
+      throw new TournamentNotFoundException("Torneo no encontrado.");
     }
 
     if(!tournament.getPublish()){
@@ -62,10 +63,10 @@ public class CompetitionServiceImp implements CompetitionService{
   }
 
   @Override
-  public Competencia create(Long tournamentId, Competencia competencia) {
+  public Competencia create(Long tournamentId, Competencia competencia){
       Torneo torneo = tournamentService.findById(tournamentId);
-      if (torneo == null) throw new ResourceNotFoundException("Torneo no encontrado");
-      if (torneo.getPublish()) throw new BusinessRuleException("No se pueden agregar competencias a un torneo publicado");
+      if (torneo == null) throw new TournamentNotFoundException("Torneo no encontrado");
+      if (torneo.getPublish()) throw new TournamentAlreadyPublishedException("No se pueden agregar competencias a un torneo publicado");
       
       competencia.setTorneo(torneo);
       return competitionRepository.save(competencia);
@@ -74,8 +75,8 @@ public class CompetitionServiceImp implements CompetitionService{
   @Override
   public Competencia update(Long id, Competencia datosNuevos) {
       Competencia competencia = competitionRepository.findById(id).orElse(null);
-      if (competencia == null) throw new ResourceNotFoundException("Competencia no encontrada");
-      if (competencia.getTorneo().getPublish()) throw new BusinessRuleException("No se puede editar una competencia de un torneo publicado");
+      if (competencia == null) throw new CompetitionNotFoundException("Competencia no encontrada");
+      if (competencia.getTorneo().getPublish()) throw new TournamentAlreadyPublishedException("No se puede editar una competencia de un torneo publicado");
 
       competencia.setName(datosNuevos.getName());
       competencia.setCapacity(datosNuevos.getCapacity());
@@ -85,10 +86,10 @@ public class CompetitionServiceImp implements CompetitionService{
   }
 
   @Override
-  public void delete(Long id) {
+  public void delete(Long id){
       Competencia competencia = competitionRepository.findById(id).orElse(null);
-      if (competencia == null) throw new ResourceNotFoundException("Competencia no encontrada");
-      if (competencia.getTorneo().getPublish()) throw new BusinessRuleException("No se puede eliminar una competencia de un torneo publicado");
+      if (competencia == null) throw new CompetitionNotFoundException("Competencia no encontrada");
+      if (competencia.getTorneo().getPublish()) throw new TournamentAlreadyPublishedException("No se puede eliminar una competencia de un torneo publicado");
       
       competitionRepository.delete(competencia);
   }
@@ -98,17 +99,17 @@ public class CompetitionServiceImp implements CompetitionService{
       Torneo tournament = tournamentService.findById(tournamentId);
 
       if(tournament == null){
-        throw new ResourceNotFoundException("Torneo no encontrado.");
+        throw new TournamentNotPublishedException("Torneo no encontrado.");
       }
 
       if(!tournament.getPublish()){
-        throw new BusinessRuleException("Torneo no publicado.");
+        throw new TournamentNotPublishedException("Torneo no publicado.");
       }
 
       Competencia competition = competitionRepository.findByIdAndTorneoId(competitionId, tournamentId);
 
       if(competition == null){
-        throw new ResourceNotFoundException("Competencia no encontrada en el torneo especificado.");
+        throw new CompetitionNotFoundException("Competencia no encontrada en el torneo especificado.");
       }
 
       CompetitionResponseDTO responseDTO = modelMapper.map(competition, CompetitionResponseDTO.class);

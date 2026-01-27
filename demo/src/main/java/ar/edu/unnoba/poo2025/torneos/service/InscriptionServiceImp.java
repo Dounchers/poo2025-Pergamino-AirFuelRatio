@@ -2,15 +2,11 @@ package ar.edu.unnoba.poo2025.torneos.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import ar.edu.unnoba.poo2025.torneos.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ar.edu.unnoba.poo2025.torneos.exception.AlreadyInscribedException;
-import ar.edu.unnoba.poo2025.torneos.exception.EnrollmentDateExceededException;
-import ar.edu.unnoba.poo2025.torneos.exception.NoCapacityException;
-import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
-import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotPublishedException;
 import ar.edu.unnoba.poo2025.torneos.model.Competencia;
 import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 import ar.edu.unnoba.poo2025.torneos.model.Participante;
@@ -42,13 +38,13 @@ public class InscriptionServiceImp implements InscriptionService{
 
         // 1. Obtener y Validar Recursos
         Torneo torneo = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Torneo no encontrado."));
+                .orElseThrow(() -> new TournamentNotFoundException("Torneo no encontrado."));
 
         Competencia competencia = competitionRepository.findById(competitionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Competencia no encontrada."));
+                .orElseThrow(() -> new CompetitionNotFoundException("Competencia no encontrada."));
 
         Participante participante = participantRepository.findById(participantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Participante no encontrado."));
+                .orElseThrow(() -> new ParticipantNotFoundException("Participante no encontrado."));
 
         // Asegurar que la competencia pertenezca al torneo (Validación de ruta /tournamentId/competitionId)
         if (!competencia.getTorneo().getId().equals(torneo.getId())) {
@@ -115,6 +111,6 @@ public class InscriptionServiceImp implements InscriptionService{
     public Inscripcion findInscriptionDetailsByIdAndParticipantId(Long inscriptionId, Long participantId) {
         // Usamos el método optimizado del repository para evitar el problema N+1
         return inscriptionRepository.findByIdAndParticipanteIdWithDetails(inscriptionId, participantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Inscripción no encontrada para el participante especificado."));
+                .orElseThrow(() -> new InscriptionNotFoundException("Inscripción no encontrada para el participante especificado."));
 }
 }
