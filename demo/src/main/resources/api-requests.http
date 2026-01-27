@@ -1,18 +1,18 @@
-# --- IDs clave ---
-# Si tu BD es secuencial y no la has reiniciado:
-# PARTICIPANTE ID: 2
-# TORNEO_PUB_ID: 1
-# COMPETENCIA 10K (Precio $20000): 1
-# COMPETENCIA 5K (Precio $15000, ya tiene 1 inscripción): 2
-# TORNEO_BORRADOR_ID: 2
+# --- IDs clave (Verificados en BD) ---
+# PARTICIPANTE ID: 2 (maria.lopez@example.com)
+# PARTICIPANTE ID: 1 (juan.perez@example.com)
+# TORNEO PUBLICADO: 5 (Torneo Abierto de Tenis)
+# TORNEO NO PUBLICADO: 10 (Torneo de Prueba 2026)
+# COMPETENCIA 1: 7 (Carrera Anual Editada - en Torneo 5)
+# COMPETENCIA 2: 8 (Dobles Mixto - en Torneo 5)
 
-@PART_EMAIL = test@unnoba.ar
+@PART_EMAIL = juan.perez@example.com
 @PART_PASS = 123456
-@ID_TORNEO_VAL = 1
-@ID_COMP_10K = 1
-@ID_COMP_5K_PREVIO = 2
-@ID_TORNEO_INV = 2
-@ID_COMP_BORRADOR = 3
+@ID_TORNEO_VAL = 5
+@ID_COMP_10K = 7
+@ID_COMP_5K_PREVIO = 8
+@ID_TORNEO_INV = 10
+@ID_COMP_BORRADOR = 8
 @INSCRIPCION_PREVIA_ID = 1
 @host = http://localhost:8080/
 @AUTH_TOKEN = eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidzTeB7G5F0DHsw9OjZNKpTMW1A
@@ -27,14 +27,14 @@ Content-Type: application/json
   "email": "{{PART_EMAIL}}",
   "password": "{{PART_PASS}}"
 }
-
-### 1.2 FALLO EMAIL O PASSWORD INCORRECTO
-POST {{host}}/participants/auth
+### 1.1.2 REGISTRO PARTICIPANTE
+POST account/participants
 Content-Type: application/json
 
 {
-  "email": "{{FAIL_EMAIL}}",
-  "password": "{{FAIL_PASS}}"
+  "email": "{{PART_EMAIL}}",
+  "password": "{{PART_PASS}}",
+  "fullName": "Test Participante"
 }
 
 # ----------------------------------------------------
@@ -141,71 +141,3 @@ GET http://localhost:8080/tournaments/{{ID_TORNEO_INV}}/competitions
 Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QHVubm9iYS5hciIsImlhdCI6MTc2NDQwMDI1MCwiZXhwIjoxNzY1MjY0MjUwfQ.TgEpMVMq_LzDoXcs1D81M1_DPJqjFeTkvlSsGU_eYvb-Ql6K-ekQ8yuMUXnidnTeB7G5F0DHsw9OjZNKpTMW1A
 
 # Resultado esperado: 404 Not Found (Si el servicio intenta buscar el torneo y no lo encuentra/no lo permite)
-
-# ----------------------------------------------------
-# GET - COMPETENCIA ESPECIFICA DE TORNEO PUBLICADO
-# ----------------------------------------------------
-GET {{host}}/{{ID_TORNEO_VAL}}/competitions/{{ID_COMP_VAL}}
-Authorization: {{AUTH_TOKEN}}
-
-# Resultado esperado: 200 OK. Lista con la Competencia deseada
-
-### GET - FALLO: Competencias de Torneo No Publicado
-GET {{host}}/tournaments/{{ID_TORNEO_VAL}}/competition/{{ID_COMP_INV}}
-Authorization: {{AUTH_TOKEN}}
-
-# Resultado esperado: 404 Not Found (Si el servicio intenta buscar la competencia y no la encuentra)
-
-
-# ----------------------------------------------------
-# POST - CREAR UN NUEVO PARTICIPANTE
-# ----------------------------------------------------
-
-# 1 POST - CREAR UN NUEVO PARTICIPANTE (EXITOSO)
-POST {{host}}/participants/account
-Authorization: {{AUTH_TOKEN}}
-Content-Type: application/json
-
-{
-  "name": "NEW_NAME",
-  "surname": "NEW_SURNAME",
-  "email": "NEW_EMAIL",
-  "password": "NEW_PASSWORD",
-  "document": "NEW_DOCUMENT",
-  "documentType": "NEW_DOCUMENT_TYPE"
-}
-
-#Resultado esperado: 201 Created (Se crea el participante)
-
-
-# 2 FALLO YA EXISTE OTRO PARTICIPANTE CON ESE EMAIL
-POST {{host}}/participants/account
-Authorization: {{AUTH_TOKEN}}
-Content-Type: application/json
-
-{
-  "name": "NEW_NAME",
-  "surname": "NEW_SURNAME",
-  "email": "NEW_EMAIL",
-  "password": "NEW_PASSWORD",
-  "document": "NEW_DOCUMENT",
-  "documentType": "NEW_DOCUMENT_TYPE"
-}
-
-#Resultado esperado: 409 Conflict (Ya existe un participante con ese email)
-
-# 3 FALLO YA EXISTE OTRO PARTICIPANTE CON ESE DNI
-POST {{host}}/participants/account
-Authorization: {{AUTH_TOKEN}}
-Content-Type: application/json
-
-{
-  "name": "NEW_NAME",
-  "surname": "NEW_SURNAME",
-  "email": "NEW_EMAIL",
-  "password": "NEW_PASSWORD",
-  "document": "NEW_DOCUMENT",
-  "documentType": "NEW_DOCUMENT_TYPE"
-}
-
-#Resultado esperado: 409 Conflict (Ya existe un participante con ese DNI)
