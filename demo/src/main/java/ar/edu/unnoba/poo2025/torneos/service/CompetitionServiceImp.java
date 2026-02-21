@@ -57,6 +57,27 @@ public class CompetitionServiceImp implements CompetitionService{
             })
             .collect(Collectors.toList());
   }
+
+  @Override
+  public List<CompetitionResponseDTO> findAllByTournamentId(Long tournamentId) {
+
+    Torneo tournament = tournamentService.findById(tournamentId);
+
+    if(tournament == null){
+      throw new TournamentNotFoundException("Torneo no encontrado.");
+    }
+
+    List<Competencia> competitions = competitionRepository.findByTorneoId(tournamentId);
+
+    return competitions.stream()
+            .map(comp -> {
+              CompetitionResponseDTO dto = modelMapper.map(comp, CompetitionResponseDTO.class);
+              dto.setTournamentName(comp.getTorneo().getName());
+              return dto;
+            })
+            .collect(Collectors.toList());
+  }
+
   @Override
   public Competencia findById(Long id) {
       return competitionRepository.findById(id).orElse(null);

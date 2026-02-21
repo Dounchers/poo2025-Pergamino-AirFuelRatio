@@ -9,6 +9,7 @@ import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 public interface CompetitionService {
     // Métodos de Consulta Pública
     List<CompetitionResponseDTO> findByTournamentId(Long tournamentId);
+    List<CompetitionResponseDTO> findAllByTournamentId(Long tournamentId);
     CompetitionResponseDTO findByIdAndTorneoId(Long competitionId, Long TorneoId);
     // Métodos CRUD de Administración
     Competencia create(Long tournamentId, Competencia competencia) ;
