@@ -1,5 +1,6 @@
 package ar.edu.unnoba.poo2025.torneos.resource;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,14 +22,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ar.edu.unnoba.poo2025.torneos.dto.CompetitionDetailDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.CreateCompetitionDTO;
+import ar.edu.unnoba.poo2025.torneos.dto.CreateTournamentRequestDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.InscripcionDTO;
+import ar.edu.unnoba.poo2025.torneos.dto.TournamentListResponseDTO;
+import ar.edu.unnoba.poo2025.torneos.dto.TournamentResponseDTO;
+import ar.edu.unnoba.poo2025.torneos.exception.InvalidDateRangeException;
 import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
 import ar.edu.unnoba.poo2025.torneos.model.Competencia;
 import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
+import ar.edu.unnoba.poo2025.torneos.model.Torneo;
 import ar.edu.unnoba.poo2025.torneos.service.AdminAuthorizationService;
 import ar.edu.unnoba.poo2025.torneos.service.CompetitionService;
 import ar.edu.unnoba.poo2025.torneos.service.TournamentService;
 import ar.edu.unnoba.poo2025.torneos.util.AdminValidator;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/admin/tournaments")
@@ -49,6 +56,98 @@ public class AdminTournamentResource {
     private void validateAdmin(String token) {
         if (token == null || token.isEmpty()) throw new InvalidTokenException("Token requerido");
         adminAuthService.authorize(token);
+    }
+
+    //   Torneos
+    //5.Get Tournaments
+  @GetMapping
+    public ResponseEntity<List<TournamentListResponseDTO>> getTournaments(@RequestHeader("Authorization") String authorization) {
+        adminValidator.validate(authorization);
+        List<Torneo> tournaments = tournamentService.findAll()
+            .stream()
+            .sorted(Comparator.comparing(Torneo::getDateStart, 
+                Comparator.nullsLast(Comparator.reverseOrder())))
+            .collect(Collectors.toList());
+        List<TournamentListResponseDTO> responseDTO = tournaments.stream()
+            .map(tournament -> modelMapper.map(tournament, TournamentListResponseDTO.class))
+            .toList();
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    //6.Get Tournaments (id)
+    @GetMapping("/{id}")
+    public ResponseEntity<TournamentResponseDTO> getTournamentById(
+        @PathVariable Long id, 
+        @RequestHeader("Authorization") String authorization) {
+
+        adminValidator.validate(authorization);
+        Torneo tournament;
+        try {
+            tournament = tournamentService.findById(id);
+            if(tournament == null) {
+                return ResponseEntity.status(404).build(); // Not Found
+            }
+
+            TournamentResponseDTO response = new TournamentResponseDTO();
+            response.setId(tournament.getId());
+            response.setName(tournament.getName());
+            response.setDescription(tournament.getDescription());
+            response.setDateStart(tournament.getDateStart());
+            response.setDateEnd(tournament.getDateEnd());
+            response.setPublish(tournament.getPublish());
+        
+            // Calcular totales
+            response.setTotalEnrollments(tournamentService.getTotalEnrollments(tournament.getId()));
+            response.setTotalRevenue(tournamentService.getTotalRevenue(tournament.getId()).doubleValue());
+        
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<?> createTournament(@Valid @RequestBody CreateTournamentRequestDTO dto, @RequestHeader("Authorization") String authorization) {
+        var administrador = adminValidator.validate(authorization);
+        Torneo torneo = modelMapper.map(dto, Torneo.class);
+        torneo.setAdministrador(administrador);
+        try {
+            tournamentService.create(torneo);
+            return ResponseEntity.status(201).build(); // Created
+        } catch (InvalidDateRangeException e) { 
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST) // 400
+                               .body(Map.of("error", e.getMessage())); 
+        } catch (Exception e) {
+            // Si el servicio lanza otra Exception, la tratamos como un conflicto genérico
+            return ResponseEntity.status(HttpStatus.CONFLICT) // 409
+                               .body(Map.of("error", e.getMessage())); 
+        }
+    }
+    //8.Change Tournament details 
+    @PutMapping("/{id}")    
+    public ResponseEntity<?> updateTournament(@PathVariable Long id, @RequestBody CreateTournamentRequestDTO dto, @RequestHeader("Authorization") String token) {
+       
+        adminValidator.validate(token);
+        Torneo torneoDetails = modelMapper.map(dto, Torneo.class);
+        try {
+            Torneo updatedTorneo = tournamentService.update(id, torneoDetails);
+            TournamentListResponseDTO responseDTO = modelMapper.map(updatedTorneo, TournamentListResponseDTO.class);
+            return ResponseEntity.ok(responseDTO); // OK
+        } catch (Exception e) {
+            //Diferencia los tipos de errores 
+            String errorMessage = e.getMessage();
+            if(errorMessage.contains("no encontrado")){
+                return ResponseEntity.status(404)
+                .body(Map.of("error", errorMessage)); // Not Found
+            }
+            if(errorMessage.contains("publicado")){
+                return ResponseEntity.status(409)
+                .body(Map.of("error", errorMessage)); // Conflict
+            }
+            // Otros errores
+            return ResponseEntity.status(404)
+                .body(Map.of("error", errorMessage)); 
+        }
     }
 
     // 1. Remove Tournament
@@ -75,7 +174,7 @@ public class AdminTournamentResource {
         // Aquí usamos el repositorio directamente a traves del service si existiera, o el metodo público
         // Nota: El método público filtra si no está publicado. Para admin deberiamos poder ver todo.
         // Por simplicidad reutilizo el método existente sabiendo esa restricción o deberías crear 'findAllByTournamentId' en el service.
-        return ResponseEntity.ok(competitionService.findByTournamentId(tournamentId));
+        return ResponseEntity.ok(competitionService.findAllByTournamentId(tournamentId));
     }
 
     // 4. Get Tournament Competition Detail (With totals)
