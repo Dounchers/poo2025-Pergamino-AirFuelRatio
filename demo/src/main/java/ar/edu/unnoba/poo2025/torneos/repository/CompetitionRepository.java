@@ -17,4 +17,6 @@ public interface CompetitionRepository extends JpaRepository<Competencia, Long>{
     //JPA interpreta el nombre del método y genera la consulta correspondiente automáticamente.
     //Para eso se debe asegurar que los nombres de los atributos en el model coincidan con los usados en el método.
   Competencia findByIdAndTorneoId(Long competitionId, Long torneoId);
+  //evitamos que existan dos competencias con el mismo nombre (compara en minúsculas) dentro de un torneo
+  boolean existsByNameIgnoreCaseAndTorneo_Id(String name, Long torneoId);
 }

@@ -88,7 +88,14 @@ public class CompetitionServiceImp implements CompetitionService{
       Torneo torneo = tournamentService.findById(tournamentId);
       if (torneo == null) throw new TournamentNotFoundException("Torneo no encontrado");
       if (torneo.getPublish()) throw new TournamentAlreadyPublishedException("No se pueden agregar competencias a un torneo publicado");
-      
+
+      //Eliminamos espacios al principio y al final del nombre para evitar problemas de validación
+      String cleanedName = competencia.getName().trim();
+      competencia.setName(cleanedName);
+
+      if(competitionRepository.existsByNameIgnoreCaseAndTorneo_Id(cleanedName, tournamentId)){
+          throw new CompetitionAlreadyExistsException("Ya existe una competencia con ese nombre en el torneo.");
+      }
       competencia.setTorneo(torneo);
       return competitionRepository.save(competencia);
   }

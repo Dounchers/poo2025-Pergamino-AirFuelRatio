@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 @Table(name = "competencia", uniqueConstraints = {
     // El DER no especifica clave única, pero a menudo tiene sentido que el nombre
     // sea único por torneo. Por simplicidad, nos apegamos al DER que no lo tiene.
+        @UniqueConstraint(columnNames = {"name", "torneo_id"}) // Opcional: Si se quisiera garantizar que no haya competencias con el mismo nombre en el mismo torneo.
 })
 public class Competencia {
 
