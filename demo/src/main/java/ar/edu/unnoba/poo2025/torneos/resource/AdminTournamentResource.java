@@ -222,7 +222,7 @@ public class AdminTournamentResource {
         compData.setBasePrice(dto.getPrecio());
 
         Competencia updated = competitionService.update(id, compData);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(modelMapper.map(updated, CreateCompetitionDTO.class));
     }
 
     // 7. Remove Tournament competition
