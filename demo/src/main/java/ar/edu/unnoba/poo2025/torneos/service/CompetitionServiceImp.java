@@ -127,7 +127,7 @@ public class CompetitionServiceImp implements CompetitionService{
       Torneo tournament = tournamentService.findById(tournamentId);
 
       if(tournament == null){
-        throw new TournamentNotPublishedException("Torneo no encontrado.");
+        throw new TournamentNotFoundException("Torneo no encontrado.");
       }
 
       if(!tournament.getPublish()){
