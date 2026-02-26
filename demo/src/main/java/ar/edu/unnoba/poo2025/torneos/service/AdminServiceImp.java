@@ -52,6 +52,6 @@ public class AdminServiceImp implements AdminService {
     @Override
     public Administrador findById(Long id) throws Exception {
         return adminRepository.findById(id)
-            .orElseThrow(() -> new Exception("Administrador no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Administrador no encontrado"));
     }
 }

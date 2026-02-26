@@ -85,9 +85,9 @@ public class AdminResource {
         Administrador adminActual = adminValidator.validate(authorization);
         
         Administrador adminAEliminar = adminService.findById(id);
-        if (adminAEliminar == null) {
-            throw new ResourceNotFoundException("Administrador no encontrado");
-        }
+        //if (adminAEliminar == null) {
+        //    throw new ResourceNotFoundException("Administrador no encontrado");
+        //}
 
         if(adminActual.getId().equals(adminAEliminar.getId())){
             return ResponseEntity.status(403).body(Map.of("error", "No puedes eliminar tu propia cuenta de administrador."));
