@@ -152,7 +152,10 @@ public class TournamentResource {
                 return ResponseEntity.notFound().build();
             }
             return ResponseEntity.ok(competition);
-        }catch (ResourceNotFoundException e) {
+        }catch (TournamentNotFoundException | CompetitionNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (TournamentNotPublishedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Competencia no pertenece al torneo o torneo no publicado"));
 
