@@ -199,8 +199,8 @@ public class AdminTournamentResource {
         try {
             Competencia competencia = modelMapper.map(dto, Competencia.class);
             // Asegurar mapeo manual
-            competencia.setCapacity(dto.getCupo());
-            competencia.setBasePrice(dto.getPrecio());
+            //competencia.setCapacity(dto.getCupo());
+            //competencia.setBasePrice(dto.getPrecio());
             
             Competencia created = competitionService.create(tournamentId, competencia);
             CreateCompetitionDTO response = modelMapper.map(created, CreateCompetitionDTO.class);
