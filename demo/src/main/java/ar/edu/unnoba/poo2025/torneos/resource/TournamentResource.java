@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import ar.edu.unnoba.poo2025.torneos.exception.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,13 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ar.edu.unnoba.poo2025.torneos.dto.CompetitionResponseDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.InscripcionResponseDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.TournamentResponseDTO;
-import ar.edu.unnoba.poo2025.torneos.exception.AlreadyInscribedException;
-import ar.edu.unnoba.poo2025.torneos.exception.EnrollmentDateExceededException;
-import ar.edu.unnoba.poo2025.torneos.exception.InvalidTokenException;
-import ar.edu.unnoba.poo2025.torneos.exception.NoCapacityException;
-import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
-import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotPublishedException;
-import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 import ar.edu.unnoba.poo2025.torneos.model.Participante;
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
@@ -74,7 +68,7 @@ public class TournamentResource {
 
         return ResponseEntity.ok(responseDTO);
     }
-    
+    //retorna todos los datos de un torneo especfico (sólo validamos el caso que no exista)
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(
             @PathVariable Long id,
@@ -101,7 +95,7 @@ public class TournamentResource {
                     .body(Map.of("error", "Token inválido o expirado"));
         }
     }
-
+    //retorna todas las competencias de un torneo (publicado)
     @GetMapping("/{tournamentId}/competitions")
     public ResponseEntity<?> getCompetitionsByTournament(
             @PathVariable Long tournamentId,
@@ -157,7 +151,7 @@ public class TournamentResource {
                     .body(Map.of("error", e.getMessage()));
         } catch (TournamentNotPublishedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Competencia no pertenece al torneo o torneo no publicado"));
+                    .body(Map.of("error", "Torneo no publicado"));
 
         } catch (Exception e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -184,21 +178,34 @@ public class TournamentResource {
                 return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
 
             } catch (InvalidTokenException | UserNotFoundException e) {
-                // Excepciones lanzadas por el servicio de autenticación
+                // 401 - Problemas de identidad
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("error", "Token inválido o expirado."));
+
+            } catch (TournamentNotFoundException | CompetitionNotFoundException e) {
+                // 404 - No existe el recurso (Torneo o Competencia)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", e.getMessage()));
+
+            } catch (TournamentNotPublishedException e) {
+                // 403 - El torneo existe pero no se puede acceder porque no está publicado
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", e.getMessage()));
+
             } catch (AlreadyInscribedException e) {
-                // El participante ya está inscrito en esa competencia
-                return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict
+                // 409 - Conflicto (Ya está en la base de datos)
+                return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(Map.of("error", e.getMessage()));
-            } catch (NoCapacityException | TournamentNotPublishedException | EnrollmentDateExceededException e) {
-                // Reglas de negocio (no hay cupo, torneo no abierto, etc.)
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST) // 400 Bad Request
+
+            } catch (NoCapacityException | EnrollmentDateExceededException e) {
+                // 400 - Error del cliente (No hay cupo o se pasó de fecha)
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("error", e.getMessage()));
+
             } catch (Exception e) {
-                // Manejo de cualquier otro error no esperado
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR) // 500
-                        .body(Map.of("error", "Error interno del servidor."));
+                // 500 - Error inesperado (para que Bruno no reciba un error vacío)
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "Ocurrió un error inesperado: " + e.getMessage()));
             }
         }
     }

@@ -51,11 +51,11 @@ public class TournamentServiceImp implements TournamentService {
     public Torneo update(Long id, Torneo torneo) throws Exception {
         // Buscar torneo existente
         Torneo existingTorneo = tournamentRepository.findById(id)
-            .orElseThrow(() -> new Exception("Torneo no encontrado"));
+            .orElseThrow(() -> new TournamentNotFoundException("Torneo no encontrado"));
 
         // Valida la regla de negocio, si se puede editar o no.(Depende si esta publicado o no)
         if (!existingTorneo.isEditable()) {
-            throw new Exception("No se puede editar un torneo publicado");
+            throw new TournamentAlreadyPublishedException("No se puede editar un torneo publicado");
         }
 
         //Valida que el intervalo de fechas sea lógico (inicio antes que fin)
@@ -82,7 +82,7 @@ public class TournamentServiceImp implements TournamentService {
         Torneo torneo = findById(tournamentId);
 
         if (torneo == null) {
-            throw new Exception("Torneo no encontrado");
+            throw new TournamentNotFoundException("Torneo no encontrado");
         }
 
         //Cuenta las inscripciones de todas las competencias
@@ -96,7 +96,7 @@ public class TournamentServiceImp implements TournamentService {
         Torneo torneo = findById(tournamentId);
 
         if (torneo == null) {
-            throw new Exception("Torneo no encontrado");
+            throw new TournamentNotFoundException("Torneo no encontrado");
         }
 
         //Suma los ingresos de todas las incripciones de todas las competencias de ese torneo

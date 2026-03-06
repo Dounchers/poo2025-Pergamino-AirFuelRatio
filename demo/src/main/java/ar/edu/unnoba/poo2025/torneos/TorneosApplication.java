@@ -20,10 +20,11 @@ public class TorneosApplication {
 	 * Al declararlo como @Bean, Spring lo gestiona y permite inyectarlo con @Autowired
 	 * en cualquier clase (Services, Controllers, etc.)
 	 */
-	@Bean
-	public ModelMapper modelMapper() {
-		return new ModelMapper();
-	}
+	//LO SACO DE LA CLASE PRINCIPAL PARA DEJARLO EN LA CARPETA CONFIG
+	//@Bean
+	//public ModelMapper modelMapper() {
+	//	return new ModelMapper();
+	//}
 
 	/**
 	 * Bean de PasswordEncoder para encriptar y verificar contraseñas con Bcrypt.

@@ -4,10 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ar.edu.unnoba.poo2025.torneos.exception.CompetitionNotFoundException;
-import ar.edu.unnoba.poo2025.torneos.exception.TournamentAlreadyPublishedException;
-import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotFoundException;
-import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotPublishedException;
+import ar.edu.unnoba.poo2025.torneos.exception.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -114,11 +111,17 @@ public class CompetitionServiceImp implements CompetitionService{
   }
 
   @Override
-  public void delete(Long id){
+  public void delete(Long id, Long tournamentId) {
       Competencia competencia = competitionRepository.findById(id).orElse(null);
       if (competencia == null) throw new CompetitionNotFoundException("Competencia no encontrada");
+      // Validamos que pertenezca al torneo indicado
+      if (!competencia.getTorneo().getId().equals(tournamentId)) {
+          throw new CompetitionNotFoundException(
+                  "La competencia no pertenece al torneo indicado"
+          );
+      }
       if (competencia.getTorneo().getPublish()) throw new TournamentAlreadyPublishedException("No se puede eliminar una competencia de un torneo publicado");
-      
+
       competitionRepository.delete(competencia);
   }
 

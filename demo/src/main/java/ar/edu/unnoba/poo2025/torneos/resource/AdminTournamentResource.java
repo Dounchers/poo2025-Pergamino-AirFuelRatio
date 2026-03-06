@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotPublishedException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -52,11 +54,6 @@ public class AdminTournamentResource {
     @Autowired
     private AdminValidator adminValidator;
 
-    // Helper para validar admin
-    private void validateAdmin(String token) {
-        if (token == null || token.isEmpty()) throw new InvalidTokenException("Token requerido");
-        adminAuthService.authorize(token);
-    }
 
     //   Torneos
     //5.Get Tournaments
@@ -160,8 +157,8 @@ public class AdminTournamentResource {
 
     // 2. Publish Tournament
     @PatchMapping("/{id}/published")
-    public ResponseEntity<?> publishTournament(@PathVariable Long id) {
-        //validateAdmin(token);
+    public ResponseEntity<?> publishTournament(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        adminValidator.validate(token);
         tournamentService.publish(id);
         return ResponseEntity.ok(Map.of("message", "Torneo publicado"));
     }
@@ -169,12 +166,20 @@ public class AdminTournamentResource {
     // 3. Get Tournament Competitions (Admin view - raw list)
     @GetMapping("/{tournamentId}/competitions")
     public ResponseEntity<?> getCompetitions(@RequestHeader("Authorization") String token, @PathVariable Long tournamentId) {
-        validateAdmin(token);
+        adminValidator.validate(token);
         // Reutilizamos el service público o creamos uno que devuelva entidades.
         // Aquí usamos el repositorio directamente a traves del service si existiera, o el metodo público
         // Nota: El método público filtra si no está publicado. Para admin deberiamos poder ver todo.
         // Por simplicidad reutilizo el método existente sabiendo esa restricción o deberías crear 'findAllByTournamentId' en el service.
-        return ResponseEntity.ok(competitionService.findAllByTournamentId(tournamentId));
+        try{
+            return ResponseEntity.ok(competitionService.findAllByTournamentId(tournamentId));
+
+        }catch (TournamentNotFoundException e){
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        }catch (Exception e){
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+
     }
 
     // 4. Get Tournament Competition Detail (With totals)
@@ -182,7 +187,7 @@ public class AdminTournamentResource {
     public ResponseEntity<?> getCompetitionDetail(@RequestHeader("Authorization") String token,
                                                   @PathVariable Long tournamentId,
                                                   @PathVariable Long id) {
-        validateAdmin(token);
+        adminValidator.validate(token);
         Competencia comp = competitionService.findById(id);
         CompetitionDetailDTO dto = modelMapper.map(comp, CompetitionDetailDTO.class);
         dto.setTotalInscripciones(competitionService.countInscripciones(id));
@@ -231,7 +236,7 @@ public class AdminTournamentResource {
                                                @PathVariable Long tournamentId,
                                                @PathVariable Long id) throws Exception {
         adminValidator.validate(token);
-        competitionService.delete(id);
+        competitionService.delete(id, tournamentId); //le pasamos el tournamentId que pide la url
         return ResponseEntity.ok().build();
     }
 

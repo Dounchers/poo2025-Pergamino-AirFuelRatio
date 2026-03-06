@@ -14,7 +14,7 @@ public interface CompetitionService {
     // Métodos CRUD de Administración
     Competencia create(Long tournamentId, Competencia competencia) ;
     Competencia update(Long id, Competencia competencia);
-    void delete(Long id);
+    void delete(Long id, Long tournamentId);
     Competencia findById(Long id);
     /** Retorna la cantidad total de inscripciones para una competencia. */
     long countInscripciones(Long competenciaId);

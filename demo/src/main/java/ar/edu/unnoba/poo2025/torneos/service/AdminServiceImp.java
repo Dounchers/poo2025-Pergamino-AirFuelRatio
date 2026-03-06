@@ -2,6 +2,7 @@ package ar.edu.unnoba.poo2025.torneos.service;
 
 import java.util.List;
 
+import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
