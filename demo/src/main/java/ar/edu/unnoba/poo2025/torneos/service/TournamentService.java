@@ -15,6 +15,8 @@ public interface TournamentService {
 
     public List<Torneo> findAll();
 
+    public List<Torneo> findAllWithCompetitions();
+
     public Torneo create(Torneo torneo) throws Exception;
 
     public Torneo update(Long id, Torneo torneo) throws Exception;

@@ -8,6 +8,7 @@ public class CompetitionResponseDTO {
   private BigDecimal basePrice; 
   private Integer capacity;
   private String tournamentName;
+  private Integer inscriptionsCount;
 
   public Long getId(){
     return id;
@@ -47,5 +48,13 @@ public class CompetitionResponseDTO {
 
   public void setTournamentName(String tournamentName) {
       this.tournamentName = tournamentName;
+  }
+
+  public Integer getInscriptionsCount() {
+      return inscriptionsCount;
+  }
+
+  public void setInscriptionsCount(Integer inscriptionsCount) {
+      this.inscriptionsCount = inscriptionsCount;
   }
 }

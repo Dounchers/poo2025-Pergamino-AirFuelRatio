@@ -1,24 +1,34 @@
 package ar.edu.unnoba.poo2025.torneos.service;
 
-import ar.edu.unnoba.poo2025.torneos.exception.*;
-import ar.edu.unnoba.poo2025.torneos.model.Competencia;
-import ar.edu.unnoba.poo2025.torneos.model.Torneo;
-import ar.edu.unnoba.poo2025.torneos.dto.CompetitionResponseDTO;
-import ar.edu.unnoba.poo2025.torneos.repository.CompetitionRepository;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
-
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
+
+import ar.edu.unnoba.poo2025.torneos.dto.CompetitionResponseDTO;
+import ar.edu.unnoba.poo2025.torneos.exception.CompetitionNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentAlreadyPublishedException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotPublishedException;
+import ar.edu.unnoba.poo2025.torneos.model.Competencia;
+import ar.edu.unnoba.poo2025.torneos.model.Torneo;
+import ar.edu.unnoba.poo2025.torneos.repository.CompetitionRepository;
 
 @ExtendWith(MockitoExtension.class)
 class CompetitionServiceImpTest {
@@ -255,8 +265,10 @@ class CompetitionServiceImpTest {
     @Test
     void shouldDeleteCompetitionWhenValid() throws Exception {
         Long competitionId = 1L;
+        Long tournamentId = 1L;
         //mockeamoas el torneo no publicado
         Torneo notPublishedTournament = new Torneo();
+        notPublishedTournament.setId(tournamentId);
         notPublishedTournament.setPublish(false);
 
         //mockeamos la competencia existente
@@ -266,7 +278,7 @@ class CompetitionServiceImpTest {
         when(competitionRepository.findById(competitionId)).thenReturn(Optional.of(existingCompetition));
 
         assertDoesNotThrow(() -> {
-            competitionServiceImp.delete(competitionId);
+            competitionServiceImp.delete(competitionId, tournamentId);
         }, "No debería lanzar ninguna excepción al eliminar una competencia válida");
 
         verify(competitionRepository, times(1)).findById(competitionId);

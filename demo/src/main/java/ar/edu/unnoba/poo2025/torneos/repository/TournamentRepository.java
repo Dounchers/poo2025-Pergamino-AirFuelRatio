@@ -18,5 +18,7 @@ public interface TournamentRepository extends JpaRepository<Torneo, Long> {
     @Query("SELECT t FROM Torneo t ORDER BY t.dateStart DESC")
     List<Torneo> findAll();
 
+    @Query("SELECT DISTINCT t FROM Torneo t LEFT JOIN FETCH t.competencias ORDER BY t.dateStart DESC")
+    List<Torneo> findAllWithCompetitions();
     
 }

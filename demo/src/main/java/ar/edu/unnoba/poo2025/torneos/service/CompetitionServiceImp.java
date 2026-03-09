@@ -4,12 +4,16 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ar.edu.unnoba.poo2025.torneos.exception.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ar.edu.unnoba.poo2025.torneos.dto.CompetitionResponseDTO;
+import ar.edu.unnoba.poo2025.torneos.exception.CompetitionAlreadyExistsException;
+import ar.edu.unnoba.poo2025.torneos.exception.CompetitionNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentAlreadyPublishedException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotPublishedException;
 import ar.edu.unnoba.poo2025.torneos.model.Competencia;
 import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
@@ -70,6 +74,7 @@ public class CompetitionServiceImp implements CompetitionService{
             .map(comp -> {
               CompetitionResponseDTO dto = modelMapper.map(comp, CompetitionResponseDTO.class);
               dto.setTournamentName(comp.getTorneo().getName());
+              dto.setInscriptionsCount(comp.getInscripciones() != null ? comp.getInscripciones().size() : 0);
               return dto;
             })
             .collect(Collectors.toList());

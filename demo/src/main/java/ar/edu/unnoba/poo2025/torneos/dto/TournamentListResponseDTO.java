@@ -9,6 +9,7 @@ public class TournamentListResponseDTO {
     private LocalDate dateStart;
     private LocalDate dateEnd;
     private boolean publish;
+    private Integer competitionsCount;
 
     public TournamentListResponseDTO(){}
 
@@ -50,5 +51,13 @@ public class TournamentListResponseDTO {
 
     public void setPublish(boolean publish) {
         this.publish = publish;
+    }
+
+    public Integer getCompetitionsCount() {
+        return competitionsCount;
+    }
+
+    public void setCompetitionsCount(Integer competitionsCount) {
+        this.competitionsCount = competitionsCount;
     }
 }

@@ -22,8 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 import ar.edu.unnoba.poo2025.torneos.dto.AdminResponseDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.AuthenticationRequestDTO;
 import ar.edu.unnoba.poo2025.torneos.dto.CreateAdminRequestDTO;
-import ar.edu.unnoba.poo2025.torneos.exception.DuplicateResourceException;
+import ar.edu.unnoba.poo2025.torneos.exception.AuthenticationFailedException;
 import ar.edu.unnoba.poo2025.torneos.exception.ResourceNotFoundException;
+import ar.edu.unnoba.poo2025.torneos.exception.UserNotFoundException;
 import ar.edu.unnoba.poo2025.torneos.model.Administrador;
 import ar.edu.unnoba.poo2025.torneos.service.AdminService;
 import ar.edu.unnoba.poo2025.torneos.service.AuthenticationService;
@@ -49,11 +50,20 @@ public class AdminResource {
 
     //1.Authentication
     @PostMapping(path = "/auth", produces = MediaType.APPLICATION_JSON_VALUE)
- 	public ResponseEntity<?> authentication(@RequestBody AuthenticationRequestDTO authRequest) throws Exception {
- 		Administrador administrador = modelMapper.map(authRequest, Administrador.class);
- 		String jwtToken = authenticationService.authenticate(administrador);
- 		Map<String, String> tokenResponse = Collections.singletonMap("token", jwtToken);
- 		return ResponseEntity.ok(tokenResponse);
+ 	public ResponseEntity<?> authentication(@RequestBody AuthenticationRequestDTO authRequest) {
+ 		try {
+ 			Administrador administrador = modelMapper.map(authRequest, Administrador.class);
+ 			String jwtToken = authenticationService.authenticate(administrador);
+ 			Map<String, String> tokenResponse = Collections.singletonMap("token", jwtToken);
+ 			return ResponseEntity.ok(tokenResponse);
+ 		} catch (UserNotFoundException | AuthenticationFailedException e) {
+ 			// Si el usuario no existe O la clave es incorrecta, devolvemos el mismo 401
+ 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+ 					.body(Map.of("error", "Credenciales inválidas: Email o password incorrecto."));
+ 		} catch (Exception e) {
+ 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+ 					.body(Map.of("error", "Error interno del servidor"));
+ 		}
  	}
 
     //2.Get admin accounts - lista todos los administradores

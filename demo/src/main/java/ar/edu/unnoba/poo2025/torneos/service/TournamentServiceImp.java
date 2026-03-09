@@ -1,18 +1,18 @@
 package ar.edu.unnoba.poo2025.torneos.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ar.edu.unnoba.poo2025.torneos.exception.TournamentAlreadyPublishedException;
-import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import ar.edu.unnoba.poo2025.torneos.exception.InvalidDateRangeException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentAlreadyPublishedException;
+import ar.edu.unnoba.poo2025.torneos.exception.TournamentNotFoundException;
 import ar.edu.unnoba.poo2025.torneos.model.Torneo;
 import ar.edu.unnoba.poo2025.torneos.repository.TournamentRepository;
-import ar.edu.unnoba.poo2025.torneos.exception.InvalidDateRangeException;
-import java.math.BigDecimal;
 
 @Service
 public class TournamentServiceImp implements TournamentService {
@@ -38,6 +38,11 @@ public class TournamentServiceImp implements TournamentService {
     @Override
     public List<Torneo> findAll() {
         return tournamentRepository.findAll();
+    }
+
+    @Override
+    public List<Torneo> findAllWithCompetitions() {
+        return tournamentRepository.findAllWithCompetitions();
     }
 
     public Torneo create(Torneo torneo) throws Exception {

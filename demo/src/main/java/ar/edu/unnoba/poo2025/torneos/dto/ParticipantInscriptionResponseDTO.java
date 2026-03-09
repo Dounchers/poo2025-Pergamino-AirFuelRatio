@@ -1,7 +1,6 @@
 package ar.edu.unnoba.poo2025.torneos.dto;
 
 import ar.edu.unnoba.poo2025.torneos.model.Inscripcion;
-import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,6 +19,7 @@ public class ParticipantInscriptionResponseDTO {
     // De la competencia
     private final Long competenciaId;
     private final String competenciaName;
+    private final BigDecimal competenciaBasePrice;
 
     public ParticipantInscriptionResponseDTO(Inscripcion inscripcion) {
         this.id = inscripcion.getId();
@@ -31,6 +31,7 @@ public class ParticipantInscriptionResponseDTO {
         this.torneoName = inscripcion.getCompetencia().getTorneo().getName();
         this.competenciaId = inscripcion.getCompetencia().getId();
         this.competenciaName = inscripcion.getCompetencia().getName();
+        this.competenciaBasePrice = inscripcion.getCompetencia().getBasePrice();
     }
 
     // En un DTO inmutable (usando final), solo getters
@@ -41,5 +42,6 @@ public class ParticipantInscriptionResponseDTO {
     public String getTorneoName() { return torneoName; }
     public Long getCompetenciaId() { return competenciaId; }
     public String getCompetenciaName() { return competenciaName; }
+    public BigDecimal getCompetenciaBasePrice() { return competenciaBasePrice; }
 
 }
