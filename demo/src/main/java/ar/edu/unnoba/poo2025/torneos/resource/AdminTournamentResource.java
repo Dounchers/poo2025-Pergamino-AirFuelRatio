@@ -259,6 +259,10 @@ public class AdminTournamentResource {
             List<InscripcionDTO> dtos = list.stream().map(i -> {
                 InscripcionDTO d = modelMapper.map(i, InscripcionDTO.class);
                 d.setParticipantEmail(i.getParticipante().getEmail());
+                d.setParticipantFirstName(i.getParticipante().getName());
+                d.setParticipantLastName(i.getParticipante().getSurname());
+                d.setParticipantDocumentType(i.getParticipante().getDocumentType());
+                d.setParticipantDocumentNumber(i.getParticipante().getDocument());
                 return d;
             }).collect(Collectors.toList());
             

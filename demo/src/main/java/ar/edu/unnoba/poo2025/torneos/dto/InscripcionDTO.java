@@ -8,6 +8,10 @@ public class InscripcionDTO {
     private BigDecimal price;
     private LocalDate dateEnrollment;
     private String participantEmail;
+    private String participantFirstName;
+    private String participantLastName;
+    private String participantDocumentType;
+    private String participantDocumentNumber;
 
     // Getters y Setters
     public Long getId() { return id; }
@@ -18,4 +22,12 @@ public class InscripcionDTO {
     public void setDateEnrollment(LocalDate dateEnrollment) { this.dateEnrollment = dateEnrollment; }
     public String getParticipantEmail() { return participantEmail; }
     public void setParticipantEmail(String participantEmail) { this.participantEmail = participantEmail; }
+    public String getParticipantFirstName() { return participantFirstName; }
+    public void setParticipantFirstName(String participantFirstName) { this.participantFirstName = participantFirstName; }
+    public String getParticipantLastName() { return participantLastName; }
+    public void setParticipantLastName(String participantLastName) { this.participantLastName = participantLastName; }
+    public String getParticipantDocumentType() { return participantDocumentType; }
+    public void setParticipantDocumentType(String participantDocumentType) { this.participantDocumentType = participantDocumentType; }
+    public String getParticipantDocumentNumber() { return participantDocumentNumber; }
+    public void setParticipantDocumentNumber(String participantDocumentNumber) { this.participantDocumentNumber = participantDocumentNumber; }
 }
